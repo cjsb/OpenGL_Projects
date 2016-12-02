@@ -1,0 +1,4 @@
+﻿  model_loader.cpp
+C:\Users\mateu\Documents\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(177): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\mateu\Documents\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(187): warning C4101: 'device_aspect_ratio': unreferenced local variable
+  model_loader.vcxproj -> C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\Debug\model_loader.exe

@@ -1,0 +1,3 @@
+C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/model_loader.dir
+C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/ALL_BUILD.dir
+C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/ZERO_CHECK.dir

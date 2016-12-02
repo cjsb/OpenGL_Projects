@@ -1,0 +1,10 @@
+﻿  Building Custom Rule C:/Users/mateu/Documents/OpenGL_Projects/Libraries-source/cgm/CMakeLists.txt
+  CMake does not need to re-run because C:\Users\mateu\Documents\OpenGL_Projects\Libraries-build\cgm-vsbuild\CMakeFiles\generate.stamp is up-to-date.
+  vec2.cpp
+  vec3.cpp
+  vector_operations.cpp
+  mat4.cpp
+  matrix_transform.cpp
+C:\Users\mateu\Documents\OpenGL_Projects\Libraries-source\cgm\src\matrix_transform.cpp(53): warning C4305: '*=': truncation from 'double' to 'float'
+  Generating Code...
+  cgm.vcxproj -> C:\Users\mateu\Documents\OpenGL_Projects\Libraries-build\cgm-vsbuild\Debug\cgm.lib
