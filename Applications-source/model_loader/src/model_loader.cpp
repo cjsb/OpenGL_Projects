@@ -18,12 +18,34 @@
 #include "Model.hpp"
 #include "vec2.hpp"
 #include "vec3.hpp"
+#include "vector_operations.hpp"
 #include "mat4.hpp"
 #include "Transform.hpp"
 #include "Camera.hpp"
+#include "Euler.hpp"
 
 GLfloat delta_time = 0.0f;
 GLfloat last_frame = 0.0f;
+bool    keys[1024];
+bool    first_mouse = true;
+double curr_x_pos = 0.0f;
+double curr_y_pos = 0.0f;
+double prev_x_pos = 0.0f;
+double prev_y_pos = 0.0f;
+double mouse_sensitivity = 0.2;
+float  heading, pitch, bank;
+
+float  cam_speed = 5.0f;
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
+{
+	if (action == GLFW_PRESS) {
+		keys[key] = true;
+	}
+	else if (action == GLFW_RELEASE) {
+		keys[key] = false;
+	}
+}
 
 void error_callback(int error, const char *description)
 {
@@ -31,13 +53,10 @@ void error_callback(int error, const char *description)
 
 }
 
+
+
 gls::Mesh setup_box()
 {
-	/*GLfloat vertices[8][3] = { { -0.5f, -0.5f, -0.5f },{ 0.5f, -0.5f, -0.5f },
-	{ 0.5f, 0.5f, -0.5f },{ -0.5f, 0.5f, -0.5f },
-	{ -0.5f, -0.5f, 0.5f },{ 0.5f, -0.5f, 0.5f },
-	{ 0.5f, 0.5f, 0.5f },{ -0.5f, 0.5f, 0.5f }, };*/
-
 	std::vector<gls::Vertex1P1N1UV> vertices;
 
 	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, -0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(0.0f, 0.0f)));
@@ -65,15 +84,52 @@ gls::Mesh setup_box()
 	std::vector<gls::Texture> textures = { diffuse1, specular1 };
 
 	return gls::Mesh(vertices, indices, textures);
-	/*GLuint indices[36] = { 0, 1, 2, 2, 3, 0,
-		5, 4, 7, 7, 6 ,5,
-		1, 5, 6, 6, 2, 1,
-		4, 0, 3, 3, 7, 4,
-		3, 2, 6, 6, 7, 3,
-		0, 1, 5, 5, 4, 0 };
 
-	GLfloat text_coords[8][2] = { { 0.0f, 0.0f },{ 1.0f, 0.0f },{ 1.0f, 1.0f },{ 0.0f, 1.0f },
-	{ 1.0f, 0.0f },{ 0.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } };*/
+}
+
+cgm::vec3 do_movement(const cgm::vec3 & pos, const cgm::vec3 & r, const cgm::vec3 & u, const cgm::vec3 & f)
+{
+	cgm::vec3 new_pos(pos);
+	
+	if (keys[GLFW_KEY_W]) {
+		new_pos.sub_assign(cgm::scale(f, cam_speed * delta_time));
+	}	
+	if (keys[GLFW_KEY_S]) {
+		new_pos.add_assign(cgm::scale(f, cam_speed * delta_time));
+	}
+	if (keys[GLFW_KEY_A]) {
+		new_pos.sub_assign(cgm::scale(r, cam_speed * delta_time));
+	}	
+	if (keys[GLFW_KEY_D]) {
+		new_pos.add_assign(cgm::scale(r, cam_speed * delta_time));
+	}
+	return new_pos;
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) 
+{
+	if (first_mouse) {
+		prev_x_pos = xpos;
+		prev_y_pos = ypos;
+		first_mouse = false;
+	}
+	float x_offset = prev_x_pos - xpos;
+	float y_offset = prev_y_pos - ypos;
+	prev_x_pos = xpos;
+	prev_y_pos = ypos;
+
+	x_offset *= mouse_sensitivity;
+	y_offset *= mouse_sensitivity;
+
+	heading += x_offset;
+	pitch   += y_offset;
+
+	if (pitch >= 89.9f) {
+		pitch = 90.0f;
+	}
+	else if (pitch <= -89.9) {
+		pitch = -90;
+	}
 }
 
 int main(int argc, char *argv[]) 
@@ -99,10 +155,10 @@ int main(int argc, char *argv[])
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 	
-	//glfwSetKeyCallback(window, key_callback);
+	glfwSetKeyCallback(window, key_callback);
 
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	//glfwSetCursorPosCallback(window, cursor_position_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
 
 	//Initialize GLEW 
 	glewExperimental = GL_TRUE;
@@ -146,22 +202,15 @@ int main(int argc, char *argv[])
 	cgm::mat4   view = cgm::invert_orthogonal(camera.get_transform().object_to_world());
 	
 	
-	GLint model_loc = glGetUniformLocation(shader.get_program(), "model");
-	if (model_loc == -1) {
-		std::cerr << "ERROR: Could not find uniform 'model' in shader program" << std::endl;
-	}
+	GLint model_loc = shader.get_uniform_location("model");
 	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.value_ptr());
 	
-	GLint view_loc = glGetUniformLocation(shader.get_program(), "view");
-	if (view_loc == -1) {
-		std::cerr << "ERROR: Could not find uniform 'view' in shader program" << std::endl;
-	}
+
+	GLint view_loc = shader.get_uniform_location("view");
 	glUniformMatrix4fv(view_loc, 1, GL_FALSE, view.value_ptr());
 
-	GLint p_loc  = glGetUniformLocation(shader.get_program(), "projection");
-	if (p_loc == -1) {
-		std::cerr << "ERROR: Could not find uniform 'projection' in shader program" << std::endl;
-	}
+	GLint p_loc = shader.get_uniform_location("projection");
+	
 
 	//////////////////////
 	glUniform3fv(light_color_loc, 1, &light_color.x);
@@ -178,11 +227,18 @@ int main(int argc, char *argv[])
 		delta_time = current_frame - last_frame;
 		last_frame = current_frame;
 
-	
-		//model = cgm::rotate(cgm::vec3(0.0f, 1.0f, 0.0f), theta );
-		//model.concat_assign(cgm::translate(cgm::vec3(0.0f, 0.0f, -3.5f)));
-		//glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.value_ptr());
-		//theta += 5.0f * delta_time;
+		cgs::Euler euler(heading, pitch, bank);
+		cgm::mat4 cam_orientation = euler.get_rotation_mat4();
+		camera.get_transform().set_object_to_upright(cam_orientation);
+		
+		cgm::vec3 right    =  cam_orientation.p();
+		cgm::vec3 up       =  cam_orientation.q();
+		cgm::vec3 forward  =  cam_orientation.r();
+
+		cgm::vec3 pos = do_movement(camera.get_transform().get_position() ,right, up, forward);
+
+		camera.get_transform().set_position(pos);
+		view = cgm::invert_orthogonal(camera.get_transform().object_to_world());
 
 		float device_aspect_ratio;
 
@@ -195,6 +251,7 @@ int main(int argc, char *argv[])
 		}
 
 		glUniformMatrix4fv(p_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
+		glUniformMatrix4fv(view_loc, 1, GL_FALSE, view.value_ptr());
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shader.use();
 		model_suit.render(shader);

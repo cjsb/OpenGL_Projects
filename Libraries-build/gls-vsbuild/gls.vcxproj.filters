@@ -1,45 +1,45 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\mateu\Documents\OpenGL_Projects\Libraries-source\gls\src\Shader.cpp">
+    <ClCompile Include="C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-source\gls\src\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\mateu\Documents\OpenGL_Projects\Libraries-source\gls\src\Texture.cpp">
+    <ClCompile Include="C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-source\gls\src\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\mateu\Documents\OpenGL_Projects\Libraries-source\gls\src\Mesh.cpp">
+    <ClCompile Include="C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-source\gls\src\Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\mateu\Documents\OpenGL_Projects\Libraries-source\gls\src\Model.cpp">
+    <ClCompile Include="C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-source\gls\src\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="C:\Users\mateu\Documents\OpenGL_Projects\Libraries-source\gls\src\Shader.hpp">
+    <ClInclude Include="C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-source\gls\src\Shader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\mateu\Documents\OpenGL_Projects\Libraries-source\gls\src\Vertex1P1N1UV.hpp">
+    <ClInclude Include="C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-source\gls\src\Vertex1P1N1UV.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\mateu\Documents\OpenGL_Projects\Libraries-source\gls\src\Texture.hpp">
+    <ClInclude Include="C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-source\gls\src\Texture.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\mateu\Documents\OpenGL_Projects\Libraries-source\gls\src\Mesh.hpp">
+    <ClInclude Include="C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-source\gls\src\Mesh.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\mateu\Documents\OpenGL_Projects\Libraries-source\gls\src\Model.hpp">
+    <ClInclude Include="C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-source\gls\src\Model.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\mateu\Documents\OpenGL_Projects\Libraries-source\gls\CMakeLists.txt" />
+    <CustomBuild Include="C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-source\gls\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{4FCF4ADB-5931-396F-8AC3-F2CDF57604F5}</UniqueIdentifier>
+      <UniqueIdentifier>{87CF8BE6-D870-33C2-BFAD-D37C10175FD9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{20BBE4A0-DFB0-3AA7-B803-F704C8D62D9E}</UniqueIdentifier>
+      <UniqueIdentifier>{D5707ED7-339B-3DE3-9D8E-A02D1063B834}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

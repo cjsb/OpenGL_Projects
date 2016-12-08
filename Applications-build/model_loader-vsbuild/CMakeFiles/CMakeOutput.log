@@ -9,8 +9,8 @@ The output was:
 Microsoft (R) Build Engine version 14.0.25420.1
 Copyright (C) Microsoft Corporation. All rights reserved.
 
-Build started 12/2/2016 12:06:29 PM.
-Project "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\3.7.0\CompilerIdC\CompilerIdC.vcxproj" on node 1 (default targets).
+Build started 12/8/2016 8:07:12 AM.
+Project "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\3.7.0\CompilerIdC\CompilerIdC.vcxproj" on node 1 (default targets).
 PrepareForBuild:
   Creating directory "Debug\".
   Creating directory "Debug\CompilerIdC.tlog\".
@@ -21,7 +21,7 @@ ClCompile:
   CMakeCCompilerId.c
 Link:
   C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:".\CompilerIdC.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\CompilerIdC.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\CompilerIdC.lib" /MACHINE:X86 /SAFESEH Debug\CMakeCCompilerId.obj
-  CompilerIdC.vcxproj -> C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\3.7.0\CompilerIdC\.\CompilerIdC.exe
+  CompilerIdC.vcxproj -> C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\3.7.0\CompilerIdC\.\CompilerIdC.exe
 PostBuildEvent:
   for %%i in (cl.exe) do @echo CMAKE_C_COMPILER=%%~$PATH:i
   :VCEnd
@@ -29,20 +29,20 @@ PostBuildEvent:
 FinalizeBuildStatus:
   Deleting file "Debug\CompilerIdC.tlog\unsuccessfulbuild".
   Touching "Debug\CompilerIdC.tlog\CompilerIdC.lastbuildstate".
-Done Building Project "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\3.7.0\CompilerIdC\CompilerIdC.vcxproj" (default targets).
+Done Building Project "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\3.7.0\CompilerIdC\CompilerIdC.vcxproj" (default targets).
 
 Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-Time Elapsed 00:00:00.49
+Time Elapsed 00:00:01.40
 
 
 Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.exe"
 
 Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.vcxproj"
 
-The C compiler identification is MSVC, found in "C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/3.7.0/CompilerIdC/CompilerIdC.exe"
+The C compiler identification is MSVC, found in "C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/3.7.0/CompilerIdC/CompilerIdC.exe"
 
 Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
 Compiler:  
@@ -54,8 +54,8 @@ The output was:
 Microsoft (R) Build Engine version 14.0.25420.1
 Copyright (C) Microsoft Corporation. All rights reserved.
 
-Build started 12/2/2016 12:06:30 PM.
-Project "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\3.7.0\CompilerIdCXX\CompilerIdCXX.vcxproj" on node 1 (default targets).
+Build started 12/8/2016 8:07:14 AM.
+Project "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\3.7.0\CompilerIdCXX\CompilerIdCXX.vcxproj" on node 1 (default targets).
 PrepareForBuild:
   Creating directory "Debug\".
   Creating directory "Debug\CompilerIdCXX.tlog\".
@@ -66,7 +66,7 @@ ClCompile:
   CMakeCXXCompilerId.cpp
 Link:
   C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:".\CompilerIdCXX.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\CompilerIdCXX.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\CompilerIdCXX.lib" /MACHINE:X86 /SAFESEH Debug\CMakeCXXCompilerId.obj
-  CompilerIdCXX.vcxproj -> C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\3.7.0\CompilerIdCXX\.\CompilerIdCXX.exe
+  CompilerIdCXX.vcxproj -> C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\3.7.0\CompilerIdCXX\.\CompilerIdCXX.exe
 PostBuildEvent:
   for %%i in (cl.exe) do @echo CMAKE_CXX_COMPILER=%%~$PATH:i
   :VCEnd
@@ -74,51 +74,127 @@ PostBuildEvent:
 FinalizeBuildStatus:
   Deleting file "Debug\CompilerIdCXX.tlog\unsuccessfulbuild".
   Touching "Debug\CompilerIdCXX.tlog\CompilerIdCXX.lastbuildstate".
-Done Building Project "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\3.7.0\CompilerIdCXX\CompilerIdCXX.vcxproj" (default targets).
+Done Building Project "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\3.7.0\CompilerIdCXX\CompilerIdCXX.vcxproj" (default targets).
 
 Build succeeded.
     0 Warning(s)
     0 Error(s)
 
-Time Elapsed 00:00:00.47
+Time Elapsed 00:00:00.46
 
 
 Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.exe"
 
 Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.vcxproj"
 
-The CXX compiler identification is MSVC, found in "C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/3.7.0/CompilerIdCXX/CompilerIdCXX.exe"
+The CXX compiler identification is MSVC, found in "C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/3.7.0/CompilerIdCXX/CompilerIdCXX.exe"
 
 Determining if the C compiler works passed with the following output:
-Change Dir: C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp
+Change Dir: C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp
 
-Run Build Command:"C:/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe" "cmTC_09dcd.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=14.0"
+Run Build Command:"C:/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe" "cmTC_42d03.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=14.0"
 Microsoft (R) Build Engine version 14.0.25420.1
 Copyright (C) Microsoft Corporation. All rights reserved.
 
-Build started 12/2/2016 12:06:31 PM.
-Project "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_09dcd.vcxproj" on node 1 (default targets).
+Build started 12/8/2016 8:07:14 AM.
+Project "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_42d03.vcxproj" on node 1 (default targets).
 PrepareForBuild:
-  Creating directory "cmTC_09dcd.dir\Debug\".
-  Creating directory "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\".
-  Creating directory "cmTC_09dcd.dir\Debug\cmTC_09dcd.tlog\".
+  Creating directory "cmTC_42d03.dir\Debug\".
+  Creating directory "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\".
+  Creating directory "cmTC_42d03.dir\Debug\cmTC_42d03.tlog\".
 InitializeBuildStatus:
-  Creating "cmTC_09dcd.dir\Debug\cmTC_09dcd.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+  Creating "cmTC_42d03.dir\Debug\cmTC_42d03.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
 ClCompile:
-  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_09dcd.dir\Debug\\" /Fd"cmTC_09dcd.dir\Debug\vc140.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\testCCompiler.c"
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_42d03.dir\Debug\\" /Fd"cmTC_42d03.dir\Debug\vc140.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\testCCompiler.c"
   Microsoft (R) C/C++ Optimizing Compiler Version 19.00.24215.1 for x86
   Copyright (C) Microsoft Corporation.  All rights reserved.
   
-  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_09dcd.dir\Debug\\" /Fd"cmTC_09dcd.dir\Debug\vc140.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\testCCompiler.c"
+  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_42d03.dir\Debug\\" /Fd"cmTC_42d03.dir\Debug\vc140.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\testCCompiler.c"
   
   testCCompiler.c
 Link:
-  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_09dcd.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_09dcd.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_09dcd.lib" /MACHINE:X86 /SAFESEH  /machine:X86 cmTC_09dcd.dir\Debug\testCCompiler.obj
-  cmTC_09dcd.vcxproj -> C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_09dcd.exe
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_42d03.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_42d03.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_42d03.lib" /MACHINE:X86 /SAFESEH  /machine:X86 cmTC_42d03.dir\Debug\testCCompiler.obj
+  cmTC_42d03.vcxproj -> C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_42d03.exe
 FinalizeBuildStatus:
-  Deleting file "cmTC_09dcd.dir\Debug\cmTC_09dcd.tlog\unsuccessfulbuild".
-  Touching "cmTC_09dcd.dir\Debug\cmTC_09dcd.tlog\cmTC_09dcd.lastbuildstate".
-Done Building Project "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_09dcd.vcxproj" (default targets).
+  Deleting file "cmTC_42d03.dir\Debug\cmTC_42d03.tlog\unsuccessfulbuild".
+  Touching "cmTC_42d03.dir\Debug\cmTC_42d03.tlog\cmTC_42d03.lastbuildstate".
+Done Building Project "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_42d03.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.87
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp
+
+Run Build Command:"C:/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe" "cmTC_7a0b0.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=14.0"
+Microsoft (R) Build Engine version 14.0.25420.1
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 12/8/2016 8:07:15 AM.
+Project "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_7a0b0.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTC_7a0b0.dir\Debug\".
+  Creating directory "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\".
+  Creating directory "cmTC_7a0b0.dir\Debug\cmTC_7a0b0.tlog\".
+InitializeBuildStatus:
+  Creating "cmTC_7a0b0.dir\Debug\cmTC_7a0b0.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_7a0b0.dir\Debug\\" /Fd"cmTC_7a0b0.dir\Debug\vc140.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files\CMake\share\cmake-3.7\Modules\CMakeCCompilerABI.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 19.00.24215.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_7a0b0.dir\Debug\\" /Fd"cmTC_7a0b0.dir\Debug\vc140.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files\CMake\share\cmake-3.7\Modules\CMakeCCompilerABI.c"
+  
+  CMakeCCompilerABI.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_7a0b0.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_7a0b0.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_7a0b0.lib" /MACHINE:X86 /SAFESEH  /machine:X86 cmTC_7a0b0.dir\Debug\CMakeCCompilerABI.obj
+  cmTC_7a0b0.vcxproj -> C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_7a0b0.exe
+FinalizeBuildStatus:
+  Deleting file "cmTC_7a0b0.dir\Debug\cmTC_7a0b0.tlog\unsuccessfulbuild".
+  Touching "cmTC_7a0b0.dir\Debug\cmTC_7a0b0.tlog\cmTC_7a0b0.lastbuildstate".
+Done Building Project "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_7a0b0.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.62
+
+
+Determining if the CXX compiler works passed with the following output:
+Change Dir: C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp
+
+Run Build Command:"C:/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe" "cmTC_4b2e6.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=14.0"
+Microsoft (R) Build Engine version 14.0.25420.1
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 12/8/2016 8:07:16 AM.
+Project "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_4b2e6.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTC_4b2e6.dir\Debug\".
+  Creating directory "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\".
+  Creating directory "cmTC_4b2e6.dir\Debug\cmTC_4b2e6.tlog\".
+InitializeBuildStatus:
+  Creating "cmTC_4b2e6.dir\Debug\cmTC_4b2e6.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_4b2e6.dir\Debug\\" /Fd"cmTC_4b2e6.dir\Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:queue "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\testCXXCompiler.cxx"
+  Microsoft (R) C/C++ Optimizing Compiler Version 19.00.24215.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_4b2e6.dir\Debug\\" /Fd"cmTC_4b2e6.dir\Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:queue "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\testCXXCompiler.cxx"
+  
+  testCXXCompiler.cxx
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_4b2e6.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_4b2e6.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_4b2e6.lib" /MACHINE:X86 /SAFESEH  /machine:X86 cmTC_4b2e6.dir\Debug\testCXXCompiler.obj
+  cmTC_4b2e6.vcxproj -> C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_4b2e6.exe
+FinalizeBuildStatus:
+  Deleting file "cmTC_4b2e6.dir\Debug\cmTC_4b2e6.tlog\unsuccessfulbuild".
+  Touching "cmTC_4b2e6.dir\Debug\cmTC_4b2e6.tlog\cmTC_4b2e6.lastbuildstate".
+Done Building Project "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_4b2e6.vcxproj" (default targets).
 
 Build succeeded.
     0 Warning(s)
@@ -127,158 +203,82 @@ Build succeeded.
 Time Elapsed 00:00:00.54
 
 
-Detecting C compiler ABI info compiled with the following output:
-Change Dir: C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp
-
-Run Build Command:"C:/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe" "cmTC_48f19.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=14.0"
-Microsoft (R) Build Engine version 14.0.25420.1
-Copyright (C) Microsoft Corporation. All rights reserved.
-
-Build started 12/2/2016 12:06:31 PM.
-Project "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_48f19.vcxproj" on node 1 (default targets).
-PrepareForBuild:
-  Creating directory "cmTC_48f19.dir\Debug\".
-  Creating directory "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\".
-  Creating directory "cmTC_48f19.dir\Debug\cmTC_48f19.tlog\".
-InitializeBuildStatus:
-  Creating "cmTC_48f19.dir\Debug\cmTC_48f19.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
-ClCompile:
-  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_48f19.dir\Debug\\" /Fd"cmTC_48f19.dir\Debug\vc140.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files\CMake\share\cmake-3.7\Modules\CMakeCCompilerABI.c"
-  Microsoft (R) C/C++ Optimizing Compiler Version 19.00.24215.1 for x86
-  Copyright (C) Microsoft Corporation.  All rights reserved.
-  
-  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_48f19.dir\Debug\\" /Fd"cmTC_48f19.dir\Debug\vc140.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files\CMake\share\cmake-3.7\Modules\CMakeCCompilerABI.c"
-  
-  CMakeCCompilerABI.c
-Link:
-  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_48f19.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_48f19.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_48f19.lib" /MACHINE:X86 /SAFESEH  /machine:X86 cmTC_48f19.dir\Debug\CMakeCCompilerABI.obj
-  cmTC_48f19.vcxproj -> C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_48f19.exe
-FinalizeBuildStatus:
-  Deleting file "cmTC_48f19.dir\Debug\cmTC_48f19.tlog\unsuccessfulbuild".
-  Touching "cmTC_48f19.dir\Debug\cmTC_48f19.tlog\cmTC_48f19.lastbuildstate".
-Done Building Project "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_48f19.vcxproj" (default targets).
-
-Build succeeded.
-    0 Warning(s)
-    0 Error(s)
-
-Time Elapsed 00:00:00.50
-
-
-Determining if the CXX compiler works passed with the following output:
-Change Dir: C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp
-
-Run Build Command:"C:/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe" "cmTC_77dff.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=14.0"
-Microsoft (R) Build Engine version 14.0.25420.1
-Copyright (C) Microsoft Corporation. All rights reserved.
-
-Build started 12/2/2016 12:06:32 PM.
-Project "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_77dff.vcxproj" on node 1 (default targets).
-PrepareForBuild:
-  Creating directory "cmTC_77dff.dir\Debug\".
-  Creating directory "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\".
-  Creating directory "cmTC_77dff.dir\Debug\cmTC_77dff.tlog\".
-InitializeBuildStatus:
-  Creating "cmTC_77dff.dir\Debug\cmTC_77dff.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
-ClCompile:
-  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_77dff.dir\Debug\\" /Fd"cmTC_77dff.dir\Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:queue "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\testCXXCompiler.cxx"
-  Microsoft (R) C/C++ Optimizing Compiler Version 19.00.24215.1 for x86
-  Copyright (C) Microsoft Corporation.  All rights reserved.
-  
-  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_77dff.dir\Debug\\" /Fd"cmTC_77dff.dir\Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:queue "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\testCXXCompiler.cxx"
-  
-  testCXXCompiler.cxx
-Link:
-  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_77dff.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_77dff.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_77dff.lib" /MACHINE:X86 /SAFESEH  /machine:X86 cmTC_77dff.dir\Debug\testCXXCompiler.obj
-  cmTC_77dff.vcxproj -> C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_77dff.exe
-FinalizeBuildStatus:
-  Deleting file "cmTC_77dff.dir\Debug\cmTC_77dff.tlog\unsuccessfulbuild".
-  Touching "cmTC_77dff.dir\Debug\cmTC_77dff.tlog\cmTC_77dff.lastbuildstate".
-Done Building Project "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_77dff.vcxproj" (default targets).
-
-Build succeeded.
-    0 Warning(s)
-    0 Error(s)
-
-Time Elapsed 00:00:00.52
-
-
 Detecting CXX compiler ABI info compiled with the following output:
-Change Dir: C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp
+Change Dir: C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp
 
-Run Build Command:"C:/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe" "cmTC_7826f.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=14.0"
+Run Build Command:"C:/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe" "cmTC_171b7.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=14.0"
 Microsoft (R) Build Engine version 14.0.25420.1
 Copyright (C) Microsoft Corporation. All rights reserved.
 
-Build started 12/2/2016 12:06:33 PM.
-Project "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_7826f.vcxproj" on node 1 (default targets).
+Build started 12/8/2016 8:07:17 AM.
+Project "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_171b7.vcxproj" on node 1 (default targets).
 PrepareForBuild:
-  Creating directory "cmTC_7826f.dir\Debug\".
-  Creating directory "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\".
-  Creating directory "cmTC_7826f.dir\Debug\cmTC_7826f.tlog\".
+  Creating directory "cmTC_171b7.dir\Debug\".
+  Creating directory "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\".
+  Creating directory "cmTC_171b7.dir\Debug\cmTC_171b7.tlog\".
 InitializeBuildStatus:
-  Creating "cmTC_7826f.dir\Debug\cmTC_7826f.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+  Creating "cmTC_171b7.dir\Debug\cmTC_171b7.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
 ClCompile:
-  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_7826f.dir\Debug\\" /Fd"cmTC_7826f.dir\Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:queue "C:\Program Files\CMake\share\cmake-3.7\Modules\CMakeCXXCompilerABI.cpp"
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_171b7.dir\Debug\\" /Fd"cmTC_171b7.dir\Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:queue "C:\Program Files\CMake\share\cmake-3.7\Modules\CMakeCXXCompilerABI.cpp"
   Microsoft (R) C/C++ Optimizing Compiler Version 19.00.24215.1 for x86
   Copyright (C) Microsoft Corporation.  All rights reserved.
   
-  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_7826f.dir\Debug\\" /Fd"cmTC_7826f.dir\Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:queue "C:\Program Files\CMake\share\cmake-3.7\Modules\CMakeCXXCompilerABI.cpp"
+  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_171b7.dir\Debug\\" /Fd"cmTC_171b7.dir\Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:queue "C:\Program Files\CMake\share\cmake-3.7\Modules\CMakeCXXCompilerABI.cpp"
   
   CMakeCXXCompilerABI.cpp
 Link:
-  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_7826f.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_7826f.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_7826f.lib" /MACHINE:X86 /SAFESEH  /machine:X86 cmTC_7826f.dir\Debug\CMakeCXXCompilerABI.obj
-  cmTC_7826f.vcxproj -> C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_7826f.exe
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_171b7.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_171b7.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_171b7.lib" /MACHINE:X86 /SAFESEH  /machine:X86 cmTC_171b7.dir\Debug\CMakeCXXCompilerABI.obj
+  cmTC_171b7.vcxproj -> C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_171b7.exe
 FinalizeBuildStatus:
-  Deleting file "cmTC_7826f.dir\Debug\cmTC_7826f.tlog\unsuccessfulbuild".
-  Touching "cmTC_7826f.dir\Debug\cmTC_7826f.tlog\cmTC_7826f.lastbuildstate".
-Done Building Project "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_7826f.vcxproj" (default targets).
-
-Build succeeded.
-    0 Warning(s)
-    0 Error(s)
-
-Time Elapsed 00:00:00.52
-
-
-
-
-Detecting CXX [] compiler features compiled with the following output:
-Change Dir: C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp
-
-Run Build Command:"C:/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe" "cmTC_bb3ec.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=14.0"
-Microsoft (R) Build Engine version 14.0.25420.1
-Copyright (C) Microsoft Corporation. All rights reserved.
-
-Build started 12/2/2016 12:06:33 PM.
-Project "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_bb3ec.vcxproj" on node 1 (default targets).
-PrepareForBuild:
-  Creating directory "cmTC_bb3ec.dir\Debug\".
-  Creating directory "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\".
-  Creating directory "cmTC_bb3ec.dir\Debug\cmTC_bb3ec.tlog\".
-InitializeBuildStatus:
-  Creating "cmTC_bb3ec.dir\Debug\cmTC_bb3ec.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
-ClCompile:
-  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_bb3ec.dir\Debug\\" /Fd"cmTC_bb3ec.dir\Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:queue "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\feature_tests.cxx"
-  Microsoft (R) C/C++ Optimizing Compiler Version 19.00.24215.1 for x86
-  Copyright (C) Microsoft Corporation.  All rights reserved.
-  
-  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_bb3ec.dir\Debug\\" /Fd"cmTC_bb3ec.dir\Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:queue "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\feature_tests.cxx"
-  
-  feature_tests.cxx
-Link:
-  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_bb3ec.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_bb3ec.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/mateu/Documents/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_bb3ec.lib" /MACHINE:X86 /SAFESEH  /machine:X86 cmTC_bb3ec.dir\Debug\feature_tests.obj
-  cmTC_bb3ec.vcxproj -> C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_bb3ec.exe
-FinalizeBuildStatus:
-  Deleting file "cmTC_bb3ec.dir\Debug\cmTC_bb3ec.tlog\unsuccessfulbuild".
-  Touching "cmTC_bb3ec.dir\Debug\cmTC_bb3ec.tlog\cmTC_bb3ec.lastbuildstate".
-Done Building Project "C:\Users\mateu\Documents\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_bb3ec.vcxproj" (default targets).
+  Deleting file "cmTC_171b7.dir\Debug\cmTC_171b7.tlog\unsuccessfulbuild".
+  Touching "cmTC_171b7.dir\Debug\cmTC_171b7.tlog\cmTC_171b7.lastbuildstate".
+Done Building Project "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_171b7.vcxproj" (default targets).
 
 Build succeeded.
     0 Warning(s)
     0 Error(s)
 
 Time Elapsed 00:00:00.51
+
+
+
+
+Detecting CXX [] compiler features compiled with the following output:
+Change Dir: C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp
+
+Run Build Command:"C:/Program Files (x86)/MSBuild/14.0/bin/MSBuild.exe" "cmTC_41e93.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=14.0"
+Microsoft (R) Build Engine version 14.0.25420.1
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 12/8/2016 8:07:17 AM.
+Project "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_41e93.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTC_41e93.dir\Debug\".
+  Creating directory "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\".
+  Creating directory "cmTC_41e93.dir\Debug\cmTC_41e93.tlog\".
+InitializeBuildStatus:
+  Creating "cmTC_41e93.dir\Debug\cmTC_41e93.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_41e93.dir\Debug\\" /Fd"cmTC_41e93.dir\Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:queue "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\feature_tests.cxx"
+  Microsoft (R) C/C++ Optimizing Compiler Version 19.00.24215.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_41e93.dir\Debug\\" /Fd"cmTC_41e93.dir\Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:queue "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\feature_tests.cxx"
+  
+  feature_tests.cxx
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_41e93.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_41e93.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/model_loader-vsbuild/CMakeFiles/CMakeTmp/Debug/cmTC_41e93.lib" /MACHINE:X86 /SAFESEH  /machine:X86 cmTC_41e93.dir\Debug\feature_tests.obj
+  cmTC_41e93.vcxproj -> C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\Debug\cmTC_41e93.exe
+FinalizeBuildStatus:
+  Deleting file "cmTC_41e93.dir\Debug\cmTC_41e93.tlog\unsuccessfulbuild".
+  Touching "cmTC_41e93.dir\Debug\cmTC_41e93.tlog\cmTC_41e93.lastbuildstate".
+Done Building Project "C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\CMakeFiles\CMakeTmp\cmTC_41e93.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.53
 
 
     Feature record: CXX_FEATURE:0cxx_aggregate_default_initializers

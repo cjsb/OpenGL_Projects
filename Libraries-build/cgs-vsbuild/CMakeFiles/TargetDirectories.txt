@@ -1,3 +1,3 @@
-C:/Users/mateu/Documents/OpenGL_Projects/Libraries-build/cgs-vsbuild/CMakeFiles/cgs.dir
-C:/Users/mateu/Documents/OpenGL_Projects/Libraries-build/cgs-vsbuild/CMakeFiles/ALL_BUILD.dir
-C:/Users/mateu/Documents/OpenGL_Projects/Libraries-build/cgs-vsbuild/CMakeFiles/ZERO_CHECK.dir
+C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Libraries-build/cgs-vsbuild/CMakeFiles/cgs.dir
+C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Libraries-build/cgs-vsbuild/CMakeFiles/ALL_BUILD.dir
+C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Libraries-build/cgs-vsbuild/CMakeFiles/ZERO_CHECK.dir

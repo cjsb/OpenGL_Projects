@@ -1,16 +1,16 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\mateu\Documents\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp">
+    <ClCompile Include="C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\mateu\Documents\OpenGL_Projects\Applications-source\model_loader\CMakeLists.txt" />
+    <CustomBuild Include="C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{B060F7E0-2232-3DED-B910-5AC0817349FD}</UniqueIdentifier>
+      <UniqueIdentifier>{FC634D59-6DBF-3E23-BFD7-FCAB9AFF3AD0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

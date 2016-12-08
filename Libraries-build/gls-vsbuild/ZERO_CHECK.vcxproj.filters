@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CustomBuild Include="C:\Users\mateu\Documents\OpenGL_Projects\Libraries-build\gls-vsbuild\CMakeFiles\29142b7c09f89e08cc1d1e0e73946963\generate.stamp.rule">
+    <CustomBuild Include="C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-build\gls-vsbuild\CMakeFiles\759882eab939f7b47283be530800a6ad\generate.stamp.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CMake Rules">
-      <UniqueIdentifier>{FB03917A-9357-30AA-897E-B85BFE710FDD}</UniqueIdentifier>
+      <UniqueIdentifier>{A93F263E-C199-340C-8845-1508F34D51C3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
