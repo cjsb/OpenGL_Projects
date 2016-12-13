@@ -35,7 +35,7 @@ double prev_y_pos = 0.0f;
 double mouse_sensitivity = 0.2;
 float  heading, pitch, bank;
 
-float  cam_speed = 5.0f;
+float  cam_speed = 6.0f;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
@@ -167,12 +167,12 @@ int main(int argc, char *argv[])
 	//gls::Mesh mesh = setup_box();
 	
 
-	gls::Shader shader("../../Applications-source/model_loader/shaders/vertex.vert", "../../Applications-source/model_loader/shaders/fragment.frag");
+	gls::Shader shader("../../Applications-source/model_loader/shaders/vertex2.vert", "../../Applications-source/model_loader/shaders/fragment2.frag");
 //	gls::Shader shader("C:/Users/mateu/Documents/Projects/Applications/model_loader/source/shaders/vertex2.vert", "C:/Users/mateu/Documents/Projects/Applications/model_loader/source/shaders/fragment2.frag");
 
 	//mesh.do_shader_plumbing(shader, "v_position", "v_normal", "v_uv");
 	shader.use();
-	gls::Model model_suit("../../Resources/nanosuit/nanosuit.obj");
+	gls::Model model_suit("../../Resources/dragon/dragon.obj");
 	//model_suit.do_shader_plumbing(shader, "v_position", "v_normal", "v_uv");
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	cgm::vec3 light_color(1.0f, 1.0f, 1.0f);
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 		std::cerr << "ERROR: Could not find uniform 'light_color' in shader program" << std::endl;
 	}
 
-	cgm::vec3 light_pos(0.0f, 8.0f, 0.0f);
+	cgm::vec3 light_pos(0.0f, 8.0f, -3.0f);
 	GLint light_pos_loc = glGetUniformLocation(shader.get_program(), "light_pos");
 	if (light_pos_loc == -1) {
 		std::cerr << "ERROR: Could not find uniform 'light_pos' in shader program" << std::endl;
@@ -194,10 +194,10 @@ int main(int argc, char *argv[])
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	//set matrixes
 	cgs::Transform model_transform;
-	model_transform.set_position(cgm::vec3(0.0f, -1.75f, -5.8f));
+	model_transform.set_position(cgm::vec3(0.0f, 0.0f, 0.0f));
 	cgs::Camera camera;
-	cgm::mat4  aux = cgm::scale(0.2f, 0.2f, 0.2f);
-	aux.concat_assign(cgm::rotate(cgm::vec3(0.0f, 1.0f, 0.0f), 45.0f));
+	camera.set_far_clipping_plane(160.0f);
+	cgm::mat4  aux = cgm::scale(1, 1, 1);
 	cgm::mat4   model = cgm::concat_mat4(aux, model_transform.object_to_world());
 	cgm::mat4   view = cgm::invert_orthogonal(camera.get_transform().object_to_world());
 	

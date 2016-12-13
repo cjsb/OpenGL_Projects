@@ -24,6 +24,7 @@ namespace cgs {
         int     get_image_height() const {return image_height;}
         float   get_device_aspect_ratio() const { return image_width / (float)image_height ;}
         void    get_bnd(float & l, float & r, float & b, float & t, float & n, float & f) const;
+		void    set_far_clipping_plane(const float f);
     private:
         void   compute_fov();
         void   compute_bnd();

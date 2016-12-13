@@ -19,7 +19,7 @@
 namespace gls {
 	class Shader {
 	public:
-		Shader(const std::string & vert_file_name, const std::string & frag_file_name);
+		Shader(const std::string & vert_file_name, const std::string & frag_file_name, const std::string & geom_file_name = "");
 		void     use()        const { glUseProgram(m_program); }
 		GLuint  get_program() const { return m_program; }
 		GLint   get_uniform_location(const std::string & u_name) const;

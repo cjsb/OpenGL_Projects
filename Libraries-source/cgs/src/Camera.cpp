@@ -79,6 +79,12 @@ void cgs::Camera::compute_proj_mat()
     }
 }
 
+void cgs::Camera::set_far_clipping_plane(const float f) 
+{
+	far = f;
+	compute_proj_mat();
+}
+
 void cgs::Camera::set_mode(cgs::Camera::Projection_type m)
 {
     if (mode != m) {

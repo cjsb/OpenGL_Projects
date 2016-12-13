@@ -19,7 +19,7 @@ using std::ifstream;
 using std::cerr;
 using std::endl;
 
-gls::Shader::Shader(const string & vert_file_name, const string & frag_file_name)
+gls::Shader::Shader(const string & vert_file_name, const string & frag_file_name, const string & geom_file_name )
 {
     ifstream in(vert_file_name);
     
@@ -83,19 +83,59 @@ gls::Shader::Shader(const string & vert_file_name, const string & frag_file_name
         
         glDeleteShader(frag_obj);
     }
-    
-    
-    
+	
+	//geometry shader
+	bool include_geom_shader = false;
+	GLuint geom_obj;
+	if (!geom_file_name.empty()) {
+		source.clear();
+		in.open(geom_file_name);
+		while (getline(in, line)) {
+			source += line + '\n';
+		}
+		in.close();
+
+		GLchar *geom_src = (GLchar *)source.c_str();
+	    geom_obj = glCreateShader(GL_GEOMETRY_SHADER);
+
+		glShaderSource(geom_obj, 1, &geom_src, NULL);
+		glCompileShader(geom_obj);
+
+		glGetShaderiv(geom_obj, GL_COMPILE_STATUS, &is_compiled);
+		include_geom_shader = true;
+		if (is_compiled == GL_FALSE) {
+			GLint max_length = 0;
+			glGetShaderiv(geom_obj, GL_INFO_LOG_LENGTH, &max_length);
+
+			std::vector<GLchar> error_log(max_length);
+			glGetShaderInfoLog(geom_obj, max_length, &max_length, &error_log[0]);
+
+			std::string message = std::string(error_log.begin(), error_log.end());
+
+			cerr << "Error compiling fragment shader\n Log: \n" << message << endl;
+
+			include_geom_shader = false;
+			glDeleteShader(geom_obj);
+		}
+	}
+	
     m_program = glCreateProgram();
     
     glAttachShader(m_program, vert_obj);
     glAttachShader(m_program, frag_obj);
-    
+	if (include_geom_shader) {
+		glAttachShader(m_program, geom_obj);
+	}
+
     glLinkProgram(m_program);
     
     glDetachShader(m_program, vert_obj);
     glDetachShader(m_program, frag_obj);
-    
+	
+	if (include_geom_shader) {
+		glDetachShader(m_program, geom_obj);
+		glDeleteShader(geom_obj);
+	}
     glDeleteShader(vert_obj);
     glDeleteShader(frag_obj);
 }
