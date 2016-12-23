@@ -112,7 +112,7 @@ gls::Shader::Shader(const string & vert_file_name, const string & frag_file_name
 
 			std::string message = std::string(error_log.begin(), error_log.end());
 
-			cerr << "Error compiling fragment shader\n Log: \n" << message << endl;
+			cerr << "Error compiling Geometry shader\n Log: \n" << message << endl;
 
 			include_geom_shader = false;
 			glDeleteShader(geom_obj);

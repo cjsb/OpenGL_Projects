@@ -1,6 +1,2 @@
 ﻿  Shader.cpp
-  Mesh.cpp
-C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-source\gls\src\Mesh.cpp(128): warning C4244: 'argument': conversion from 'GLuint' to 'GLfloat', possible loss of data
-  Model.cpp
-  Generating Code...
   gls.vcxproj -> C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-build\gls-vsbuild\Debug\gls.lib
