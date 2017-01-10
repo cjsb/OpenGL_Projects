@@ -10,6 +10,7 @@ in  vec2  f_uv;
 layout (location = 0) out vec4 gl_FragColor;
 layout (pixel_center_integer) in vec4 gl_FragCoord;
 
+layout(RGBA8) uniform image3D voxelImage;
 uniform  int   u_voxel_grid_width;
 uniform  int   u_voxel_grid_height;
 
@@ -36,6 +37,6 @@ void main()
 	else {
 	    tex_coord = temp;
 	}
-
+	imageStore( voxelImage, ivec3(tex_coord), vec4(0.0f, 1.0f, 0.0f, 1.0f) );
 	gl_FragColor = vec4( 1, 1, 1, 1 );
 }

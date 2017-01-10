@@ -38,8 +38,8 @@ float  heading, pitch, bank;
 float  cam_speed = 6.0f;
 
 /// voxealization data
-int voxel_grid_width  = 512;
-int voxel_grid_height = 512; 
+int voxel_grid_width  = 128;
+int voxel_grid_height = 128; 
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
@@ -79,13 +79,13 @@ gls::Mesh setup_box()
 									3, 2, 6, 6, 7, 3,
 									0, 1, 5, 5, 4, 0 };
 
-	gls::Texture diffuse1;
-	gls::load_texture(diffuse1, "C:/Users/mateu/Documents/Projects/Applications/model_loader/source/textures/container_diffuse.png", "texture_diffuse");
+	//gls::Texture diffuse1;
+	//gls::load_texture(diffuse1, "C:/Users/mateu/Documents/Projects/Applications/model_loader/source/textures/container_diffuse.png", "texture_diffuse");
 
-	gls::Texture specular1;
-	gls::load_texture(specular1, "C:/Users/mateu/Documents/Projects/Applications/model_loader/source/textures/container_specular.png", "texture_specular");
+	//gls::Texture specular1;
+	//gls::load_texture(specular1, "C:/Users/mateu/Documents/Projects/Applications/model_loader/source/textures/container_specular.png", "texture_specular");
 
-	std::vector<gls::Texture> textures = { diffuse1, specular1 };
+	std::vector<gls::Texture> textures;
 
 	return gls::Mesh(vertices, indices, textures);
 
@@ -136,7 +136,80 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	}
 }
 
-void voxelize_scene(const gls::Model & m, const gls::Shader & vs, GLFWwindow *window)
+unsigned int gen_3d_texture(int dim)
+{
+	std::vector<float> data;
+	data.resize(4 * voxel_grid_width*voxel_grid_width*voxel_grid_width);
+	for (int i = 0; i < 4 * voxel_grid_width*voxel_grid_width*voxel_grid_width; ++i)
+	{
+		data[i] = 0.0f;
+	}
+	
+	GLuint tex_id;
+	glGenTextures(1, &tex_id);
+	glBindTexture(GL_TEXTURE_3D, tex_id);
+	
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	
+	glTexStorage3D(GL_TEXTURE_3D, 10, GL_RGBA8, voxel_grid_width, voxel_grid_width, voxel_grid_width);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA8, voxel_grid_width, voxel_grid_width, voxel_grid_width, 0, GL_RGBA, GL_FLOAT, &data[0]);
+	
+	glGenerateMipmap(GL_TEXTURE_3D);
+
+	glBindTexture(GL_TEXTURE_3D, 0);
+	GLenum err = glGetError();
+	std::cout << glewGetErrorString(err) << " " << err << std::endl;
+
+	return tex_id;
+}
+
+void render_cube(const gls::Shader & volume_shader , const GLuint & tex_3d , GLFWwindow * window) 
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, voxel_grid_width, voxel_grid_height);
+
+	volume_shader.use();
+	gls::Mesh mesh = setup_box();
+
+	cgs::Transform obj_transf;
+	obj_transf.set_position(cgm::vec3(0.0f, 0.0f, 0.0f));
+
+	cgs::Camera camera;
+	camera.scale_film_gate(voxel_grid_width, voxel_grid_height);
+	camera.get_transform().set_object_to_upright(cgm::mat4());
+	camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, 2.0f));
+
+	GLint  model_loc  =  volume_shader.get_uniform_location("model");
+	GLint  view_loc   =  volume_shader.get_uniform_location("view");
+	GLint  proj_loc   =  volume_shader.get_uniform_location("projection");
+
+	glUniformMatrix4fv(model_loc, 1, GL_FALSE, obj_transf.object_to_world().value_ptr());
+	glUniformMatrix4fv(view_loc, 1, GL_FALSE, (cgm::invert_orthogonal(camera.get_transform().object_to_world())).value_ptr() );
+	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
+
+	glBindTexture(GL_TEXTURE_3D, tex_3d);
+	glBindImageTexture(0, tex_3d, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
+	while (!glfwWindowShouldClose(window)) {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		volume_shader.use();
+		mesh.render(volume_shader);
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+}
+
+
+void voxelize_scene(const gls::Model & m, const gls::Shader & vs, const GLuint & tex_id , GLFWwindow *window)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glViewport(0, 0, voxel_grid_width, voxel_grid_height);
@@ -158,10 +231,6 @@ void voxelize_scene(const gls::Model & m, const gls::Shader & vs, GLFWwindow *wi
 	
 	
 	/// ORTHOGONAL PROJECTION ALONG THE X AXIS ///////////////////
-	//cgm::mat4 mvp_x = cgm::rotate(cgm::vec3(0.0f, 1.0f, 0.0f), -90.0f);
-	//mvp_x.concat_assign(cgm::translate(cgm::vec3(2.0f, 0.0f, 0.0f)));
-	//mvp_x = cgm::invert_orthogonal(mvp_x);
-
 	camera.get_transform().set_object_to_upright(cgm::rotate(cgm::vec3(0.0f, 1.0f, 0.0f), 90.0f));
 	camera.get_transform().set_position(cgm::vec3(2.0f, 0.0f, 0.0f));
 	
@@ -173,10 +242,6 @@ void voxelize_scene(const gls::Model & m, const gls::Shader & vs, GLFWwindow *wi
 	/// -------------------------------------/////////////////////
 	
 	/// ORTHOGONAL PROJECTION ALONG THE Y AXIS //////
-	//cgm::mat4 mvp_y = cgm::rotate(cgm::vec3(1.0f, 0.0f, 0.0f), 90.0f);
-	//mvp_y.concat_assign(cgm::translate(cgm::vec3(0.0f, 2.0f, 0.0f)));
-	//mvp_y = cgm::invert_orthogonal(mvp_y);
-	
 	camera.get_transform().set_object_to_upright(cgm::rotate(cgm::vec3(1.0f, 0.0f, 0.0f), -90.0f));
 	camera.get_transform().set_position(cgm::vec3(0.0f, 2.0f, 0.0f));
 
@@ -187,8 +252,6 @@ void voxelize_scene(const gls::Model & m, const gls::Shader & vs, GLFWwindow *wi
 	//-----------------------------------------/////
 	
 	// ORTHOGONAL PROJECTION ALONG THE Z AXIS //
-	//cgm::mat4 mvp_z = cgm::translate(cgm::vec3(0.0f, 0.0f, 2.0f));
-	//mvp_z = cgm::invert_orthogonal(mvp_z);
 
 	camera.get_transform().set_object_to_upright(cgm::mat4());
 	camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, 2.0f));
@@ -202,7 +265,10 @@ void voxelize_scene(const gls::Model & m, const gls::Shader & vs, GLFWwindow *wi
 	glUniform1i(vs.get_uniform_location("u_voxel_grid_width"), voxel_grid_width);
 	glUniform1i(vs.get_uniform_location("u_voxel_grid_height"), voxel_grid_height);
 
-	while (!glfwWindowShouldClose(window)) {
+	
+	glBindTexture(GL_TEXTURE_3D, tex_id);
+	glBindImageTexture(0, tex_id, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+	//while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		vs.use();
@@ -210,11 +276,27 @@ void voxelize_scene(const gls::Model & m, const gls::Shader & vs, GLFWwindow *wi
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-	}
+	//}
 
+	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+	static  float data[4 * 128 * 128 * 128] = { 0.0f };
+	glGetTexImage(GL_TEXTURE_3D, 0, GL_RGBA, GL_FLOAT, data);
+	for (auto & i : data) {
+		if (i != 0) {
+			std::cout << i << " ";
+		}
+		
+	}
+	std::cout << std::endl;
+
+	glBindTexture(GL_TEXTURE_3D, 0);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+	gls::Shader volume_shader("../../Applications-source/model_loader/shaders/vertex.vert", "../../Applications-source/model_loader/shaders/render_voxel.frag");
+
+	render_cube(volume_shader, tex_id, window);
 }
 
 int main(int argc, char *argv[]) 
@@ -261,7 +343,9 @@ int main(int argc, char *argv[])
 	voxelize_shader.use();
 	gls::Model model_suit("../../Resources/Cow/cow.obj");
 	
-	voxelize_scene(model_suit ,voxelize_shader, window);
+	GLuint tex_3d_id = gen_3d_texture(voxel_grid_width);
+
+	voxelize_scene(model_suit ,voxelize_shader, tex_3d_id, window);
 	std::cout << "finish" << std::endl;
 	return 0;
 
