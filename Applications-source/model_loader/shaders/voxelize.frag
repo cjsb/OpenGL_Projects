@@ -37,6 +37,6 @@ void main()
 	else {
 	    tex_coord = temp;
 	}
-	imageStore( voxelImage, ivec3(tex_coord), vec4(0.0f, 1.0f, 0.0f, 1.0f) );
+	imageStore( voxelImage, ivec3(tex_coord), vec4(0.0f, 1.0f, 1.0f, 1.0f) );
 	gl_FragColor = vec4( 1, 1, 1, 1 );
 }

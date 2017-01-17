@@ -38,8 +38,8 @@ float  heading, pitch, bank;
 float  cam_speed = 6.0f;
 
 /// voxealization data
-int voxel_grid_width  = 128;
-int voxel_grid_height = 128; 
+int voxel_grid_width  = 256;
+int voxel_grid_height = 256; 
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
@@ -63,21 +63,21 @@ gls::Mesh setup_box()
 {
 	std::vector<gls::Vertex1P1N1UV> vertices;
 
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, -0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(0.0f, 0.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, -0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(1.0f, 0.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, 0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(1.0f, 1.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, 0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(0.0f, 1.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, -0.5f, 0.5f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(0.0f, 0.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, -0.5f, 0.5f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(1.0f, 0.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, 0.5f, 0.5f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(1.0f, 1.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, 0.5f, 0.5f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(0.0f, 1.0f)));
+	//vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, -0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(0.0f, 0.0f)));
+	//vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, -0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(1.0f, 0.0f)));
+	//vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, 0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(1.0f, 1.0f)));
+	//vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, 0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(0.0f, 1.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-1.0f, -1.0f, 1.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(0.0f, 0.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(1.0f, -1.0f, 1.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(1.0f, 0.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(1.0f, 1.0f, 1.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(1.0f, 1.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-1.0f, 1.0f, 1.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(0.0f, 1.0f)));
 
-	std::vector<GLuint> indices = { 0, 1, 2, 2, 3, 0,
-									5, 4, 7, 7, 6 ,5,
-									1, 5, 6, 6, 2, 1,
-									4, 0, 3, 3, 7, 4,
-									3, 2, 6, 6, 7, 3,
-									0, 1, 5, 5, 4, 0 };
+	std::vector<GLuint> indices = {
+									0, 1, 2, 2, 3 ,0
+								
+									
+									
+									 };
 
 	//gls::Texture diffuse1;
 	//gls::load_texture(diffuse1, "C:/Users/mateu/Documents/Projects/Applications/model_loader/source/textures/container_diffuse.png", "texture_diffuse");
@@ -185,15 +185,18 @@ void render_cube(const gls::Shader & volume_shader , const GLuint & tex_3d , GLF
 	cgs::Camera camera;
 	camera.scale_film_gate(voxel_grid_width, voxel_grid_height);
 	camera.get_transform().set_object_to_upright(cgm::mat4());
-	camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, 2.0f));
+	camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, 3.0f));
 
 	GLint  model_loc  =  volume_shader.get_uniform_location("model");
 	GLint  view_loc   =  volume_shader.get_uniform_location("view");
 	GLint  proj_loc   =  volume_shader.get_uniform_location("projection");
+	GLint slice_loc = volume_shader.get_uniform_location("slice");
 
 	glUniformMatrix4fv(model_loc, 1, GL_FALSE, obj_transf.object_to_world().value_ptr());
 	glUniformMatrix4fv(view_loc, 1, GL_FALSE, (cgm::invert_orthogonal(camera.get_transform().object_to_world())).value_ptr() );
 	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
+
+	glUniform1i(slice_loc, 0);
 
 	glBindTexture(GL_TEXTURE_3D, tex_3d);
 	glBindImageTexture(0, tex_3d, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
@@ -278,16 +281,21 @@ void voxelize_scene(const gls::Model & m, const gls::Shader & vs, const GLuint &
 		glfwPollEvents();
 	//}
 
-	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+	/*glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	static  float data[4 * 128 * 128 * 128] = { 0.0f };
 	glGetTexImage(GL_TEXTURE_3D, 0, GL_RGBA, GL_FLOAT, data);
+	int r, c, s;
+	r = c = s = 0;
+	int count = 0;
 	for (auto & i : data) {
+		++count;
 		if (i != 0) {
 			std::cout << i << " ";
+			std::cout << "count= " << count << " ";
 		}
 		
 	}
-	std::cout << std::endl;
+	std::cout << std::endl;*/
 
 	glBindTexture(GL_TEXTURE_3D, 0);
 	glEnable(GL_CULL_FACE);

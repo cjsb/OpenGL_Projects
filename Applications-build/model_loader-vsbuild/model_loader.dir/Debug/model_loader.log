@@ -1,8 +1,4 @@
-﻿  model_loader.cpp
-C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(120): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(121): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(125): warning C4244: '*=': conversion from 'double' to 'float', possible loss of data
-C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(126): warning C4244: '*=': conversion from 'double' to 'float', possible loss of data
-C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(398): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(415): warning C4101: 'device_aspect_ratio': unreferenced local variable
+﻿SOIL.lib(SOIL.obj) : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\Debug\vc120.pdb'; linking object as if no debug info
   model_loader.vcxproj -> C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\Debug\model_loader.exe
