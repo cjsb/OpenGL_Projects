@@ -57,9 +57,42 @@ void error_callback(int error, const char *description)
 
 }
 
-
-
 gls::Mesh setup_box()
+{
+	std::vector<gls::Vertex1P1N1UV> vertices;
+
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, -0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(0.0f, 0.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, -0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(1.0f, 0.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, 0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(1.0f, 1.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, 0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(0.0f, 1.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, -0.5f, 0.5f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(0.0f, 0.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, -0.5f, 0.5f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(1.0f, 0.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, 0.5f, 0.5f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(1.0f, 1.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, 0.5f, 0.5f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(0.0f, 1.0f)));
+
+	std::vector<GLuint> indices = {
+		0, 1, 2, 2, 3 ,0, //front
+		4, 5, 6, 6, 7, 4, //back 
+		5, 1, 2, 2 ,6, 5, // right 
+		0, 4, 7, 7, 3, 0, // left 
+		7, 6, 2, 2, 3, 7, // top 
+		0, 1, 5, 5, 4, 0 // bottom
+	};
+
+	//gls::Texture diffuse1;
+	//gls::load_texture(diffuse1, "C:/Users/mateu/Documents/Projects/Applications/model_loader/source/textures/container_diffuse.png", "texture_diffuse");
+
+	//gls::Texture specular1;
+	//gls::load_texture(specular1, "C:/Users/mateu/Documents/Projects/Applications/model_loader/source/textures/container_specular.png", "texture_specular");
+
+	std::vector<gls::Texture> textures;
+
+	return gls::Mesh(vertices, indices, textures);
+
+}
+
+
+gls::Mesh plane_mesh()
 {
 	std::vector<gls::Vertex1P1N1UV> vertices;
 
@@ -67,17 +100,12 @@ gls::Mesh setup_box()
 	//vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, -0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(1.0f, 0.0f)));
 	//vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, 0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(1.0f, 1.0f)));
 	//vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, 0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(0.0f, 1.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-1.0f, -1.0f, 1.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(0.0f, 0.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(1.0f, -1.0f, 1.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(1.0f, 0.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(1.0f, 1.0f, 1.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(1.0f, 1.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-1.0f, 1.0f, 1.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(0.0f, 1.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, -0.5f, 0.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(0.0f, 0.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, -0.5f, 0.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(1.0f, 0.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, 0.5f, 0.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(1.0f, 1.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, 0.5f, 0.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(0.0f, 1.0f)));
 
-	std::vector<GLuint> indices = {
-									0, 1, 2, 2, 3 ,0
-								
-									
-									
-									 };
+	std::vector<GLuint> indices = {0, 1, 2, 2, 3 ,0 };
 
 	//gls::Texture diffuse1;
 	//gls::load_texture(diffuse1, "C:/Users/mateu/Documents/Projects/Applications/model_loader/source/textures/container_diffuse.png", "texture_diffuse");
@@ -176,27 +204,48 @@ void render_cube(const gls::Shader & volume_shader , const GLuint & tex_3d , GLF
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glViewport(0, 0, voxel_grid_width, voxel_grid_height);
 
-	volume_shader.use();
-	gls::Mesh mesh = setup_box();
 
-	cgs::Transform obj_transf;
-	obj_transf.set_position(cgm::vec3(0.0f, 0.0f, 0.0f));
+	volume_shader.use();
+	gls::Mesh mesh = plane_mesh();
 
 	cgs::Camera camera;
 	camera.scale_film_gate(voxel_grid_width, voxel_grid_height);
 	camera.get_transform().set_object_to_upright(cgm::mat4());
-	camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, 3.0f));
+	camera.get_transform().set_position(cgm::vec3(126.0f, 126.0f, -3.0f));
+	
+	//orient the plane to match the camera's near clipping plane
+	float left, right, bottom, top, near, far;
+	camera.get_bnd(left, right, bottom, top, near, far);
+	
+	
+	cgm::mat4 model = cgm::scale(right * 2.0f, top * 2.0f, 1.0f);
+	model.concat_assign(cgm::translate(cgm::vec3(0.0f, 0.0f, -near - 0.0001f)));
+	model.concat_assign(camera.get_transform().object_to_upright());
+	model.concat_assign(cgm::translate(camera.get_transform().get_position()));
 
-	GLint  model_loc  =  volume_shader.get_uniform_location("model");
-	GLint  view_loc   =  volume_shader.get_uniform_location("view");
-	GLint  proj_loc   =  volume_shader.get_uniform_location("projection");
-	GLint slice_loc = volume_shader.get_uniform_location("slice");
 
-	glUniformMatrix4fv(model_loc, 1, GL_FALSE, obj_transf.object_to_world().value_ptr());
+	//cgs::Transform obj_transf;
+	//obj_transf.set_position(cgm::vec3(0.0f, 0.0f, 0.0f));
+
+	GLint  model_loc	   =  volume_shader.get_uniform_location("model");
+	GLint  view_loc		   =  volume_shader.get_uniform_location("view");
+	GLint  proj_loc		   =  volume_shader.get_uniform_location("projection");
+	GLint  slice_loc	   =  volume_shader.get_uniform_location("slice");
+	GLint  steps_loc	   =  volume_shader.get_uniform_location("steps");
+	GLint  cam_origin_loc  =  volume_shader.get_uniform_location("cam_origin");
+	GLint  box_min_loc     = volume_shader.get_uniform_location("box_min");
+	GLint  box_max_loc     = volume_shader.get_uniform_location("box_max");
+
+
+	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.value_ptr());
 	glUniformMatrix4fv(view_loc, 1, GL_FALSE, (cgm::invert_orthogonal(camera.get_transform().object_to_world())).value_ptr() );
 	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
 
 	glUniform1i(slice_loc, 0);
+	glUniform1i(steps_loc, 240);
+	glUniform3fv(cam_origin_loc, 1, camera.get_transform().get_position().value_ptr());
+	glUniform3fv(box_min_loc, 1, cgm::vec3().value_ptr());
+	glUniform3fv(box_max_loc, 1, cgm::vec3(voxel_grid_width - 1, voxel_grid_width - 1, voxel_grid_width - 1).value_ptr());
 
 	glBindTexture(GL_TEXTURE_3D, tex_3d);
 	glBindImageTexture(0, tex_3d, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
@@ -302,7 +351,7 @@ void voxelize_scene(const gls::Model & m, const gls::Shader & vs, const GLuint &
 	glEnable(GL_DEPTH_TEST);
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-	gls::Shader volume_shader("../../Applications-source/model_loader/shaders/vertex.vert", "../../Applications-source/model_loader/shaders/render_voxel.frag");
+	gls::Shader volume_shader("../../Applications-source/model_loader/shaders/ray_marching.vert", "../../Applications-source/model_loader/shaders/ray_marching.frag");
 
 	render_cube(volume_shader, tex_id, window);
 }
