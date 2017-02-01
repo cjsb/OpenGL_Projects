@@ -57,26 +57,32 @@ void error_callback(int error, const char *description)
 
 }
 
-gls::Mesh setup_box()
+gls::Mesh setup_volume_bbox()
 {
 	std::vector<gls::Vertex1P1N1UV> vertices;
 
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, -0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(0.0f, 0.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, -0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(1.0f, 0.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, 0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(1.0f, 1.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, 0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(0.0f, 1.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, -0.5f, 0.5f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(0.0f, 0.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, -0.5f, 0.5f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(1.0f, 0.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, 0.5f, 0.5f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(1.0f, 1.0f)));
-	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, 0.5f, 0.5f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(0.0f, 1.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.0f, 0.0f, 0.0f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(0.0f, 0.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(1.0f, 0.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.0f, 1.0f, 0.0f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(1.0f, 1.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.0f, 1.0f, 1.0f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(0.0f, 1.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(1.0f, 0.0f, 0.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(0.0f, 0.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(1.0f, 0.0f, 1.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(1.0f, 0.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(1.0f, 1.0f, 0.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(1.0f, 1.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(1.0f, 1.0f, 1.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(0.0f, 1.0f)));
 
 	std::vector<GLuint> indices = {
-		0, 1, 2, 2, 3 ,0, //front
-		4, 5, 6, 6, 7, 4, //back 
-		5, 1, 2, 2 ,6, 5, // right 
-		0, 4, 7, 7, 3, 0, // left 
-		7, 6, 2, 2, 3, 7, // top 
-		0, 1, 5, 5, 4, 0 // bottom
+		1,5,7,
+		7,3,1,
+		0,2,6,
+		6,4,0,
+		0,1,3,
+		3,2,0,
+		7,5,4,
+		4,6,7,
+		2,3,7,
+		7,6,2,
+		1,0,4,
+		4,5,1
 	};
 
 	//gls::Texture diffuse1;
@@ -164,10 +170,42 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	}
 }
 
+GLuint gen_2d_texture(const GLuint text_width, const GLuint text_height)
+{
+	GLuint back_face_text;
+	glGenTextures(1, &back_face_text);
+	glBindTexture(GL_TEXTURE_2D, back_face_text);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, text_width, text_height, 0, GL_RGBA, GL_FLOAT, NULL);
+	return back_face_text;
+}
+
+
 unsigned int gen_3d_texture(int dim)
 {
-	std::vector<float> data;
-	data.resize(4 * voxel_grid_width*voxel_grid_width*voxel_grid_width);
+	/*float* data = new float[dim*dim*dim];
+	memset(data, 0, sizeof(float)*dim*dim*dim);
+
+	GLuint texId;
+	glGenTextures(1, &texId);
+	glBindTexture(GL_TEXTURE_3D, texId);
+	//glActiveTexture(GL_TEXTURE0 );
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, dim, dim, dim, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+	glBindTexture(GL_TEXTURE_3D, 0);
+	GLenum err = glGetError();
+	std::cout << glewGetErrorString(err) << " " << err << std::endl;
+	delete[] data;
+	return texId;*/
+
+	float* data = new float[ 4 *dim*dim*dim];
+	//data.resize(4 * voxel_grid_width*voxel_grid_width*voxel_grid_width);
 	for (int i = 0; i < 4 * voxel_grid_width*voxel_grid_width*voxel_grid_width; ++i)
 	{
 		data[i] = 0.0f;
@@ -199,16 +237,136 @@ unsigned int gen_3d_texture(int dim)
 	return tex_id;
 }
 
-void render_cube(const gls::Shader & volume_shader , const GLuint & tex_3d , GLFWwindow * window) 
+GLuint gen_framebuffer(const GLuint text_id, const GLuint text_width, const GLuint tex_height) 
+{
+	GLuint depth_buffer;
+	glGenRenderbuffers(1, &depth_buffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, text_width, tex_height);
+
+	GLuint framebuffer;
+	glGenFramebuffers(1, &framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, text_id, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_buffer);
+	
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		std::cerr << "ERROR: Could not generate framebuffer object" << std::endl;
+	}
+		
+
+	return framebuffer;
+}
+
+void render_voxels( const GLuint & tex_3d , GLFWwindow * window) 
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glViewport(0, 0, voxel_grid_width, voxel_grid_height);
 
+	// Start 01 Step, render the back faces of the volume boulding box to a framebuffer //
+	
+	//generate the framebuffer's texture
+	GLuint bf_texture   =  gen_2d_texture(voxel_grid_width, voxel_grid_height);
+	
+	// generate the framebuffer and assign the 2d texture to it
+	GLuint framebuffer  =  gen_framebuffer(bf_texture, voxel_grid_width, voxel_grid_height);
+	
+	gls::Mesh volume =  setup_volume_bbox();
+	
+	gls::Shader backface_shader("../../Applications-source/model_loader/shaders/backface.vert", "../../Applications-source/model_loader/shaders/backface.frag");
+	backface_shader.use();
 
+	//create the 2d texture
+	cgs::Camera camera;
+	camera.scale_film_gate(voxel_grid_width, voxel_grid_height);
+	camera.get_transform().set_object_to_upright(cgm::mat4());
+	camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, 3.0f));
+
+	cgm::mat4 model = cgm::translate(cgm::vec3(-0.5f, -0.5f, -0.5f));
+	model.concat_assign(cgm::rotate(cgm::vec3(0.0f, 1.0f, 0.0f), -35.0f));
+	model.concat_assign(cgm::rotate(cgm::vec3(1.0f, 0.0f, 0.0f), 25.0f));
+	GLint model_loc = backface_shader.get_uniform_location("model");
+	GLint  view_loc = backface_shader.get_uniform_location("view");
+	GLint  proj_loc = backface_shader.get_uniform_location("projection");
+
+	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.value_ptr());
+	glUniformMatrix4fv(view_loc, 1, GL_FALSE, (cgm::invert_orthogonal(camera.get_transform().object_to_world())).value_ptr());
+	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
+
+	//here you bind the framebuffer
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
+	
+	//while (!glfwWindowShouldClose(window)) {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		backface_shader.use();
+		volume.render(backface_shader);
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	//}
+	glDisable(GL_CULL_FACE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	///--------------------------------END 01--------------------------------------------- //
+	
+	// start 02 - Render the front faces of the volume and do the ray marching //
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	gls::Shader ray_marching_sh("../../Applications-source/model_loader/shaders/ray_marching.vert", "../../Applications-source/model_loader/shaders/ray_marching.frag");
+	ray_marching_sh.use();
+
+	model_loc = ray_marching_sh.get_uniform_location("model");
+	view_loc = ray_marching_sh.get_uniform_location("view");
+	proj_loc = ray_marching_sh.get_uniform_location("projection");
+
+	GLint backface_loc = ray_marching_sh.get_uniform_location("exit_points");
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, bf_texture);
+	glUniform1i(backface_loc, 1);
+
+	//GLint volume_loc = ray_marching_sh.get_uniform_location("voxel_image");
+	//glActiveTexture(GL_TEXTURE2);
+	//glBindTexture(GL_TEXTURE_3D, tex_3d);
+	//glUniform1i(volume_loc, 2);
+
+	GLint screen_size_loc = ray_marching_sh.get_uniform_location("screen_size");
+	cgm::vec2 screen_size(voxel_grid_width, voxel_grid_height);
+
+	GLint voxel_grid_loc = ray_marching_sh.get_uniform_location("voxel_grid_width");
+
+
+	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.value_ptr());
+	glUniformMatrix4fv(view_loc, 1, GL_FALSE, (cgm::invert_orthogonal(camera.get_transform().object_to_world())).value_ptr());
+	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
+
+	glUniform2fv(screen_size_loc, 1, screen_size.value_ptr());
+	glUniform1i(voxel_grid_loc, voxel_grid_width);
+	
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glBindTexture(GL_TEXTURE_3D, tex_3d);
+	glBindImageTexture(0, tex_3d, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
+	while (!glfwWindowShouldClose(window)) {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glActiveTexture(GL_TEXTURE1);
+		ray_marching_sh.use();
+		volume.render(ray_marching_sh);
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+	glDisable(GL_CULL_FACE);
+
+	//---------------------------- END 02 ------------------------------------------------- ///
+	
+	/*
 	volume_shader.use();
 	gls::Mesh mesh = plane_mesh();
 
-	cgs::Camera camera;
+	//cgs::Camera camera;
 	camera.scale_film_gate(voxel_grid_width, voxel_grid_height);
 	camera.get_transform().set_object_to_upright(cgm::mat4());
 	camera.get_transform().set_position(cgm::vec3(126.0f, 126.0f, -3.0f));
@@ -218,7 +376,7 @@ void render_cube(const gls::Shader & volume_shader , const GLuint & tex_3d , GLF
 	camera.get_bnd(left, right, bottom, top, near, far);
 	
 	
-	cgm::mat4 model = cgm::scale(right * 2.0f, top * 2.0f, 1.0f);
+	model = cgm::scale(right * 2.0f, top * 2.0f, 1.0f);
 	model.concat_assign(cgm::translate(cgm::vec3(0.0f, 0.0f, -near - 0.0001f)));
 	model.concat_assign(camera.get_transform().object_to_upright());
 	model.concat_assign(cgm::translate(camera.get_transform().get_position()));
@@ -257,7 +415,7 @@ void render_cube(const gls::Shader & volume_shader , const GLuint & tex_3d , GLF
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-	}
+	} */
 }
 
 
@@ -351,9 +509,9 @@ void voxelize_scene(const gls::Model & m, const gls::Shader & vs, const GLuint &
 	glEnable(GL_DEPTH_TEST);
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-	gls::Shader volume_shader("../../Applications-source/model_loader/shaders/ray_marching.vert", "../../Applications-source/model_loader/shaders/ray_marching.frag");
+	//gls::Shader volume_shader("../../Applications-source/model_loader/shaders/ray_marching.vert", "../../Applications-source/model_loader/shaders/ray_marching.frag");
 
-	render_cube(volume_shader, tex_id, window);
+	render_voxels( tex_id, window);
 }
 
 int main(int argc, char *argv[]) 
