@@ -41,6 +41,10 @@ float  cam_speed = 6.0f;
 int voxel_grid_width  = 256;
 int voxel_grid_height = 256; 
 
+//// FOR TEST
+GLuint g_volTexObj;
+
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
 	if (action == GLFW_PRESS) {
@@ -257,7 +261,50 @@ GLuint gen_framebuffer(const GLuint text_id, const GLuint text_width, const GLui
 
 	return framebuffer;
 }
+//////////////////TEST //////////////////////////////////////
+GLuint initVol3DTex(const char* filename, GLuint w, GLuint h, GLuint d)
+{
 
+	FILE *fp;
+	size_t size = w * h * d;
+	GLubyte *data = new GLubyte[size];			  // 8bit
+	if (!(fp = fopen(filename, "rb")))
+	{
+		std::cout << "Error: opening .raw file failed" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	else
+	{
+		std::cout << "OK: open .raw file successed" << std::endl;
+	}
+	if (fread(data, sizeof(char), size, fp) != size)
+	{
+		std::cout << "Error: read .raw file failed" << std::endl;
+		exit(1);
+	}
+	else
+	{
+		std::cout << "OK: read .raw file successed" << std::endl;
+	}
+	fclose(fp);
+
+	glGenTextures(1, &g_volTexObj);
+	// bind 3D texture target
+	glBindTexture(GL_TEXTURE_3D, g_volTexObj);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+	// pixel transfer happens here from client to OpenGL server
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_INTENSITY, w, h, d, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+
+	delete[]data;
+	std::cout << "volume texture created" << std::endl;
+	return g_volTexObj;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////
 void render_voxels( const GLuint & tex_3d , GLFWwindow * window) 
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -269,7 +316,7 @@ void render_voxels( const GLuint & tex_3d , GLFWwindow * window)
 	GLuint bf_texture   =  gen_2d_texture(voxel_grid_width, voxel_grid_height);
 	
 	// generate the framebuffer and assign the 2d texture to it
-	GLuint framebuffer  =  gen_framebuffer(bf_texture, voxel_grid_width, voxel_grid_height);
+	GLuint bf_framebuffer  =  gen_framebuffer(bf_texture, voxel_grid_width, voxel_grid_height);
 	
 	gls::Mesh volume =  setup_volume_bbox();
 	
@@ -294,7 +341,7 @@ void render_voxels( const GLuint & tex_3d , GLFWwindow * window)
 	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
 
 	//here you bind the framebuffer
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, bf_framebuffer);
 
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
@@ -313,25 +360,81 @@ void render_voxels( const GLuint & tex_3d , GLFWwindow * window)
 
 	///--------------------------------END 01--------------------------------------------- //
 	
-	// start 02 - Render the front faces of the volume and do the ray marching //
+	//  STEP 02 -  Render the front faces to texture////////////////////////////////////////////////
+
+	GLuint ff_texture = gen_2d_texture(voxel_grid_width, voxel_grid_height);
+	GLuint ff_framebuffer = gen_framebuffer(ff_texture, voxel_grid_width, voxel_grid_height);
+
+	gls::Shader ff_shader("../../Applications-source/model_loader/shaders/frontface.vert", "../../Applications-source/model_loader/shaders/frontface.frag");
+	ff_shader.use();
+
+	model_loc  =  ff_shader.get_uniform_location("model");
+	view_loc   =  ff_shader.get_uniform_location("view");
+	proj_loc   =  ff_shader.get_uniform_location("projection");
+
+	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.value_ptr());
+	glUniformMatrix4fv(view_loc, 1, GL_FALSE, (cgm::invert_orthogonal(camera.get_transform().object_to_world())).value_ptr());
+	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ff_framebuffer);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
+	//while (!glfwWindowShouldClose(window)) {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	ff_shader.use();
+	volume.render(ff_shader);
+
+	glfwSwapBuffers(window);
+	glfwPollEvents();
+	//}
+	glDisable(GL_CULL_FACE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+
+	//------------------- Step 03 - Ray marching----------------------------------------------------//
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	gls::Shader ray_marching_sh("../../Applications-source/model_loader/shaders/ray_marching.vert", "../../Applications-source/model_loader/shaders/ray_marching.frag");
 	ray_marching_sh.use();
 
+	////////////////////////////////////DRAW A PLANE IN FRONT OF THE CAMERA/////////////////////////////////////////////////////////////
+	gls::Mesh near_clipping_plane = plane_mesh();
+
+	//orient the plane to match the camera's near clipping plane
+	float left, right, bottom, top, near, far;
+	camera.get_bnd(left, right, bottom, top, near, far);
+
+
+	model = cgm::scale(right * 2.0f, top * 2.0f, 1.0f);
+	model.concat_assign(cgm::translate(cgm::vec3(0.0f, 0.0f, -near - 0.0001f)));
+	model.concat_assign(camera.get_transform().object_to_upright());
+	model.concat_assign(cgm::translate(camera.get_transform().get_position()));
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	model_loc = ray_marching_sh.get_uniform_location("model");
 	view_loc = ray_marching_sh.get_uniform_location("view");
 	proj_loc = ray_marching_sh.get_uniform_location("projection");
 
-	GLint backface_loc = ray_marching_sh.get_uniform_location("exit_points");
+	GLint backface_loc   =  ray_marching_sh.get_uniform_location("exit_points");
+	GLint frontface_loc   = ray_marching_sh.get_uniform_location("entry_points");
+
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, bf_texture);
 	glUniform1i(backface_loc, 1);
 
-	//GLint volume_loc = ray_marching_sh.get_uniform_location("voxel_image");
-	//glActiveTexture(GL_TEXTURE2);
-	//glBindTexture(GL_TEXTURE_3D, tex_3d);
-	//glUniform1i(volume_loc, 2);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, ff_texture);
+	glUniform1i(frontface_loc, 2);
 
+	/*
+	GLint volume_loc = ray_marching_sh.get_uniform_location("voxel_image");
+	glActiveTexture(GL_TEXTURE3);
+	 glBindTexture(GL_TEXTURE_3D, tex_3d);
+	glUniform1i(volume_loc, 3);
+	*/
 	GLint screen_size_loc = ray_marching_sh.get_uniform_location("screen_size");
 	cgm::vec2 screen_size(voxel_grid_width, voxel_grid_height);
 
@@ -345,22 +448,24 @@ void render_voxels( const GLuint & tex_3d , GLFWwindow * window)
 	glUniform2fv(screen_size_loc, 1, screen_size.value_ptr());
 	glUniform1i(voxel_grid_loc, voxel_grid_width);
 	
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
+	
+	
 	glBindTexture(GL_TEXTURE_3D, tex_3d);
 	glBindImageTexture(0, tex_3d, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
+	
+	
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//glActiveTexture(GL_TEXTURE1);
 		ray_marching_sh.use();
-		volume.render(ray_marching_sh);
+		near_clipping_plane.render(ray_marching_sh);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-	glDisable(GL_CULL_FACE);
-
-	//---------------------------- END 02 ------------------------------------------------- ///
+	//---------------------------- END 03 ------------------------------------------------- ///
 	
 	/*
 	volume_shader.use();
@@ -427,7 +532,7 @@ void voxelize_scene(const gls::Model & m, const gls::Shader & vs, const GLuint &
 	//Disable some fixed-function opeartions
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
-	//glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
 	
 	cgs::Transform obj_transf;
@@ -552,6 +657,8 @@ int main(int argc, char *argv[])
 
 	//gls::Shader shader("../../Applications-source/model_loader/shaders/vertex.vert", "../../Applications-source/model_loader/shaders/fragment2.frag");
 	gls::Shader shader("C:/Users/mateu/Documents/Projects/Applications/model_loader/source/shaders/vertex2.vert", "C:/Users/mateu/Documents/Projects/Applications/model_loader/source/shaders/fragment2.frag");
+	
+	
 	gls::Shader voxelize_shader("../../Applications-source/model_loader/shaders/voxelize.vert", "../../Applications-source/model_loader/shaders/voxelize.frag", "../../Applications-source/model_loader/shaders/voxelize.geom");
 	
 	//shader.use();
@@ -562,6 +669,9 @@ int main(int argc, char *argv[])
 
 	voxelize_scene(model_suit ,voxelize_shader, tex_3d_id, window);
 	std::cout << "finish" << std::endl;
+	
+	//g_volTexObj = initVol3DTex("../../Resources/head256.raw", 256, 256, 225);
+	//render_voxels(g_volTexObj, window);
 	return 0;
 
 

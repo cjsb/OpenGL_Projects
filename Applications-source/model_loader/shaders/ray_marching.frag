@@ -4,12 +4,14 @@ in  vec3  f_position;
 in  vec3  f_normal;
 in  vec2  f_uv;
 
-in vec3  entry_point;
+//in vec3  entry_point;
 in vec4  exit_point_coord;
 
 uniform vec2 screen_size;
 uniform int  voxel_grid_width;
 uniform sampler2D exit_points;
+uniform sampler2D entry_points;
+
 //uniform sampler3D voxel_image;
 
 layout (location = 0) out vec4 gl_FragColor;
@@ -26,11 +28,18 @@ struct Ray {
 
 void main() 
 {
-	vec3 exit_point = texture(exit_points, gl_FragCoord.st/screen_size).xyz; // normalize pixel coordinates
+	// normalize pixel coordinates
+	vec3 entry_point  =  texture(entry_points, gl_FragCoord.st/screen_size).xyz;
+	vec3 exit_point   =  texture(exit_points, gl_FragCoord.st/screen_size).xyz;
+	
 
-	if(entry_point == exit_point) {
-		discard; //background
-	}
+	//if(entry_point == exit_point) {
+	//	discard; //background
+	//}
+	
+	
+
+	
 	float step_size =  0.001f;///change to UNIFORM!!!!!
 
 	vec3   ray_dir        =  exit_point - entry_point;
@@ -50,7 +59,7 @@ void main()
 	int voxel_grid_width = 1600; // make uniform
 	vec4 color;
 	float length_acum = 0.0f;
-	for (int i = 0; i < 1200; ++i ) {
+	for (int i = 0; i < 1000; ++i ) {
 		color =  imageLoad(voxel_image, ivec3(voxel_coord) );
 		
 		//color  = texture(voxel_image, voxel_coord);

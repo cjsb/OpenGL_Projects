@@ -7,7 +7,7 @@ out vec3 f_normal;
 out vec2 f_uv;
 out vec3 f_position;
 
-out vec3 entry_point;
+//out vec3 entry_point;
 out vec4 exit_point_coord;
 
 uniform mat4 model, view, projection;
@@ -20,7 +20,7 @@ uniform mat4 model, view, projection;
 	f_position  =  vec3(model * vec4(v_position, 1.0f));
 	f_normal    =  v_normal; 
 	
-	entry_point = v_position;
+	//entry_point = v_position;
 	exit_point_coord = gl_Position;
 
  }

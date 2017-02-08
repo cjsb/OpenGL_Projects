@@ -1,3 +1,0 @@
-C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Libraries-build/gls-vsbuild/CMakeFiles/gls.dir
-C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Libraries-build/gls-vsbuild/CMakeFiles/ALL_BUILD.dir
-C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Libraries-build/gls-vsbuild/CMakeFiles/ZERO_CHECK.dir
