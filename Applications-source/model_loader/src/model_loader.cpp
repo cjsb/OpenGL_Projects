@@ -129,6 +129,33 @@ gls::Mesh plane_mesh()
 
 }
 
+gls::Mesh triangle_mesh()
+{
+	std::vector<gls::Vertex1P1N1UV> vertices;
+
+	//vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, -0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(0.0f, 0.0f)));
+	//vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, -0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(1.0f, 0.0f)));
+	//vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, 0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(1.0f, 1.0f)));
+	//vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, 0.5f, -0.5f), cgm::vec3(0.0f, 0.0f, -1.0f), cgm::vec2(0.0f, 1.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(-0.5f, 0.0f, 0.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(0.0f, 0.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.5f, 0.0f, 0.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(1.0f, 0.0f)));
+	vertices.push_back(gls::Vertex1P1N1UV(cgm::vec3(0.0f, 0.5f, 0.0f), cgm::vec3(0.0f, 0.0f, 1.0f), cgm::vec2(1.0f, 1.0f)));
+
+	std::vector<GLuint> indices = { 0, 1, 2};
+
+	//gls::Texture diffuse1;
+	//gls::load_texture(diffuse1, "C:/Users/mateu/Documents/Projects/Applications/model_loader/source/textures/container_diffuse.png", "texture_diffuse");
+
+	//gls::Texture specular1;
+	//gls::load_texture(specular1, "C:/Users/mateu/Documents/Projects/Applications/model_loader/source/textures/container_specular.png", "texture_specular");
+
+	std::vector<gls::Texture> textures;
+
+	return gls::Mesh(vertices, indices, textures);
+
+}
+
+
 cgm::vec3 do_movement(const cgm::vec3 & pos, const cgm::vec3 & r, const cgm::vec3 & u, const cgm::vec3 & f)
 {
 	cgm::vec3 new_pos(pos);
@@ -523,6 +550,80 @@ void render_voxels( const GLuint & tex_3d , GLFWwindow * window)
 	} */
 }
 
+void voxels_slice_visualization(const GLuint & tex_3d, GLFWwindow * window)
+{
+	gls::Shader visualization_shader("../../Applications-source/model_loader/shaders/slice_visualization.vert", "../../Applications-source/model_loader/shaders/slice_visualization.frag");
+	visualization_shader.use();
+	gls::Mesh mesh = plane_mesh();
+
+	cgs::Camera camera;
+	camera.scale_film_gate(voxel_grid_width, voxel_grid_height);
+	camera.get_transform().set_object_to_upright(cgm::mat4());
+	camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, -3.0f));
+
+	//orient the plane to match the camera's near clipping plane
+	float left, right, bottom, top, near, far;
+	camera.get_bnd(left, right, bottom, top, near, far);
+
+	cgm::mat4 model;
+	model = cgm::scale(right * 2.0f, top * 2.0f, 1.0f);
+	model.concat_assign(cgm::translate(cgm::vec3(0.0f, 0.0f, -near - 0.0001f)));
+	model.concat_assign(camera.get_transform().object_to_upright());
+	model.concat_assign(cgm::translate(camera.get_transform().get_position()));
+
+
+	//cgs::Transform obj_transf;
+	//obj_transf.set_position(cgm::vec3(0.0f, 0.0f, 0.0f));
+
+	GLint  model_loc = visualization_shader.get_uniform_location("model");
+	GLint  view_loc = visualization_shader.get_uniform_location("view");
+	GLint  proj_loc = visualization_shader.get_uniform_location("projection");
+	GLint  slice_loc = visualization_shader.get_uniform_location("slice");
+	GLint  axis_loc  = visualization_shader.get_uniform_location("axis");
+
+	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.value_ptr());
+	glUniformMatrix4fv(view_loc, 1, GL_FALSE, (cgm::invert_orthogonal(camera.get_transform().object_to_world())).value_ptr());
+	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
+
+	int slice_val = 0;
+	glUniform1i(slice_loc, slice_val); // z axis
+	int axis = 1;
+	glUniform1i(axis_loc, axis);
+
+	glBindTexture(GL_TEXTURE_3D, tex_3d);
+	glBindImageTexture(0, tex_3d, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
+	while (!glfwWindowShouldClose(window)) {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		visualization_shader.use();
+		mesh.render(visualization_shader);
+
+		if (keys[GLFW_KEY_W]) {
+			++slice_val;
+			std::cout << " z axis slice is " << slice_val << std::endl;
+		}
+		if (keys[GLFW_KEY_S]) {
+			--slice_val;
+			std::cout << "z axis slice is " << slice_val << std::endl;
+		}
+		if ((keys[GLFW_KEY_X])) {
+			axis = 1;
+			std::cout << "axis slice is X" << std::endl;
+		}
+		if ((keys[GLFW_KEY_Y])) {
+			axis = 2;
+			std::cout << "axis slice is Y" << std::endl;
+		}
+		if ((keys[GLFW_KEY_Z])) {
+			axis = 3;
+			std::cout << "axis slice is Z " << std::endl;
+		}
+		glUniform1i(slice_loc, slice_val);
+		glUniform1i(axis_loc, axis);
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	} 
+}
 
 void voxelize_scene(const gls::Model & m, const gls::Shader & vs, const GLuint & tex_id , GLFWwindow *window)
 {
@@ -534,9 +635,10 @@ void voxelize_scene(const gls::Model & m, const gls::Shader & vs, const GLuint &
 	glDisable(GL_DEPTH_TEST);
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
+	cgm::mat4 ortho = cgm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 2.0f - 1.0f, 3.0f);
 	
 	cgs::Transform obj_transf;
-	obj_transf.set_object_to_upright(cgm::scale(0.005f, 0.005f, 0.005f));
+	obj_transf.set_object_to_upright(cgm::concat_mat4(cgm::scale(0.12f, 0.12f, 0.12f), cgm::rotate(cgm::vec3(1.0f, 0.0f, 0.0f),0.0f )) );
 	obj_transf.set_position(cgm::vec3(0.0f, 0.0f, 0.0f));
 	
 
@@ -550,7 +652,7 @@ void voxelize_scene(const gls::Model & m, const gls::Shader & vs, const GLuint &
 	camera.get_transform().set_position(cgm::vec3(2.0f, 0.0f, 0.0f));
 	
 	cgm::mat4 mvp_x = cgm::concat_mat4(obj_transf.object_to_world(), cgm::invert_orthogonal(camera.get_transform().object_to_world()));
-	mvp_x.concat_assign(camera.get_projection());
+	mvp_x.concat_assign(ortho);
 	GLint mvp_x_loc =  vs.get_uniform_location("u_mvp_x");
 	glUniformMatrix4fv(mvp_x_loc, 1, GL_FALSE, mvp_x.value_ptr());
 
@@ -561,7 +663,7 @@ void voxelize_scene(const gls::Model & m, const gls::Shader & vs, const GLuint &
 	camera.get_transform().set_position(cgm::vec3(0.0f, 2.0f, 0.0f));
 
 	cgm::mat4 mvp_y = cgm::concat_mat4(obj_transf.object_to_world(), cgm::invert_orthogonal(camera.get_transform().object_to_world()));
-	mvp_y.concat_assign(camera.get_projection());
+	mvp_y.concat_assign(ortho);
 	GLint mvp_y_loc = vs.get_uniform_location("u_mvp_y");
 	glUniformMatrix4fv(mvp_y_loc, 1, GL_FALSE, mvp_y.value_ptr());
 	//-----------------------------------------/////
@@ -572,7 +674,7 @@ void voxelize_scene(const gls::Model & m, const gls::Shader & vs, const GLuint &
 	camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, 2.0f));
 
 	cgm::mat4 mvp_z = cgm::concat_mat4(obj_transf.object_to_world(), cgm::invert_orthogonal(camera.get_transform().object_to_world()));
-	mvp_z.concat_assign(camera.get_projection());
+	mvp_z.concat_assign(ortho);
 	GLint mvp_z_loc = vs.get_uniform_location("u_mvp_z");
 	glUniformMatrix4fv(mvp_z_loc, 1, GL_FALSE, mvp_z.value_ptr());
 	// --------------------------------------//
@@ -617,6 +719,7 @@ void voxelize_scene(const gls::Model & m, const gls::Shader & vs, const GLuint &
 	//gls::Shader volume_shader("../../Applications-source/model_loader/shaders/ray_marching.vert", "../../Applications-source/model_loader/shaders/ray_marching.frag");
 
 	render_voxels( tex_id, window);
+	//voxels_slice_visualization(tex_id, window);
 }
 
 int main(int argc, char *argv[]) 
@@ -642,7 +745,7 @@ int main(int argc, char *argv[])
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 	
-	//glfwSetKeyCallback(window, key_callback);
+	glfwSetKeyCallback(window, key_callback);
 
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	//glfwSetCursorPosCallback(window, mouse_callback);
@@ -665,6 +768,7 @@ int main(int argc, char *argv[])
 	voxelize_shader.use();
 	gls::Model model_suit("../../Resources/Cow/cow.obj");
 	
+
 	GLuint tex_3d_id = gen_3d_texture(voxel_grid_width);
 
 	voxelize_scene(model_suit ,voxelize_shader, tex_3d_id, window);
