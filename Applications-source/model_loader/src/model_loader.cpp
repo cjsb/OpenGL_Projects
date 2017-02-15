@@ -38,11 +38,33 @@ float  heading, pitch, bank;
 float  cam_speed = 6.0f;
 
 /// voxealization data
-int voxel_grid_width  = 256;
-int voxel_grid_height = 256; 
+int voxel_grid_width  = 512;
+int voxel_grid_height = 512; 
 
 //// FOR TEST
 GLuint g_volTexObj;
+
+GLenum glCheckError_(const char *file, int line)
+{
+	GLenum errorCode;
+	while ((errorCode = glGetError()) != GL_NO_ERROR)
+	{
+		std::string error;
+		switch (errorCode)
+		{
+		case GL_INVALID_ENUM:                  error = "INVALID_ENUM"; break;
+		case GL_INVALID_VALUE:                 error = "INVALID_VALUE"; break;
+		case GL_INVALID_OPERATION:             error = "INVALID_OPERATION"; break;
+		case GL_STACK_OVERFLOW:                error = "STACK_OVERFLOW"; break;
+		case GL_STACK_UNDERFLOW:               error = "STACK_UNDERFLOW"; break;
+		case GL_OUT_OF_MEMORY:                 error = "OUT_OF_MEMORY"; break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION: error = "INVALID_FRAMEBUFFER_OPERATION"; break;
+		}
+		std::cout << error << " | " << file << " (" << line << ")" << std::endl;
+	}
+	return errorCode;
+}
+#define glCheckError() glCheckError_(__FILE__, __LINE__) 
 
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
@@ -235,13 +257,16 @@ unsigned int gen_3d_texture(int dim)
 	delete[] data;
 	return texId;*/
 
-	float* data = new float[ 4 *dim*dim*dim];
-	//data.resize(4 * voxel_grid_width*voxel_grid_width*voxel_grid_width);
-	for (int i = 0; i < 4 * voxel_grid_width*voxel_grid_width*voxel_grid_width; ++i)
-	{
-		data[i] = 0.0f;
-	}
+	int size = 4 * dim * dim * dim;
+
+	float* data = (float*)malloc(sizeof(float) * size);
 	
+	if (data != NULL) {
+		for (int i = 0; i < 4 * voxel_grid_width*voxel_grid_width*voxel_grid_width; ++i) {
+			data[i] = 0.0f;
+		}
+	}
+
 	GLuint tex_id;
 	glGenTextures(1, &tex_id);
 	glBindTexture(GL_TEXTURE_3D, tex_id);
@@ -262,9 +287,10 @@ unsigned int gen_3d_texture(int dim)
 	glGenerateMipmap(GL_TEXTURE_3D);
 
 	glBindTexture(GL_TEXTURE_3D, 0);
-	GLenum err = glGetError();
-	std::cout << glewGetErrorString(err) << " " << err << std::endl;
-
+	glCheckError();
+	//GLenum err = glGetError();
+	//std::cout << glewGetErrorString(err) << " " << err << std::endl;
+	free(data);
 	return tex_id;
 }
 
@@ -288,68 +314,249 @@ GLuint gen_framebuffer(const GLuint text_id, const GLuint text_width, const GLui
 
 	return framebuffer;
 }
-//////////////////TEST //////////////////////////////////////
-GLuint initVol3DTex(const char* filename, GLuint w, GLuint h, GLuint d)
+
+void fface_bface_renderer(GLFWwindow * window, GLuint & bf_texture, GLuint & ff_texture, const gls::Shader & backface_shader, const gls::Shader & frontface_shader  ,cgs::Camera & camera ) 
 {
+	
+	glViewport(0, 0, voxel_grid_width, voxel_grid_height);
 
-	FILE *fp;
-	size_t size = w * h * d;
-	GLubyte *data = new GLubyte[size];			  // 8bit
-	if (!(fp = fopen(filename, "rb")))
-	{
-		std::cout << "Error: opening .raw file failed" << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	else
-	{
-		std::cout << "OK: open .raw file successed" << std::endl;
-	}
-	if (fread(data, sizeof(char), size, fp) != size)
-	{
-		std::cout << "Error: read .raw file failed" << std::endl;
-		exit(1);
-	}
-	else
-	{
-		std::cout << "OK: read .raw file successed" << std::endl;
-	}
-	fclose(fp);
+	// Start 01 Step, render the back faces of the volume boulding box to a framebuffer //
 
-	glGenTextures(1, &g_volTexObj);
-	// bind 3D texture target
-	glBindTexture(GL_TEXTURE_3D, g_volTexObj);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
-	// pixel transfer happens here from client to OpenGL server
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage3D(GL_TEXTURE_3D, 0, GL_INTENSITY, w, h, d, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+	
 
-	delete[]data;
-	std::cout << "volume texture created" << std::endl;
-	return g_volTexObj;
+	// generate the framebuffer and assign the 2d texture to it
+	GLuint bf_framebuffer = gen_framebuffer(bf_texture, voxel_grid_width, voxel_grid_height);
+
+	gls::Mesh volume = setup_volume_bbox();
+
+	//gls::Shader backface_shader("../../Applications-source/model_loader/shaders/backface.vert", "../../Applications-source/model_loader/shaders/backface.frag");
+	backface_shader.use();
+
+	//create the 2d texture
+	//cgs::Camera camera;
+	//camera.scale_film_gate(voxel_grid_width, voxel_grid_height);
+	//camera.get_transform().set_object_to_upright(cgm::mat4());
+	//camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, 3.0f));
+
+	cgm::mat4 model = cgm::translate(cgm::vec3(-0.5f, -0.5f, -0.5f));
+	model.concat_assign(cgm::rotate(cgm::vec3(0.0f, 1.0f, 0.0f), -35.0f));
+	//model.concat_assign(cgm::rotate(cgm::vec3(1.0f, 0.0f, 0.0f), 25.0f));
+	
+	GLint model_loc = backface_shader.get_uniform_location("model");
+	GLint  view_loc = backface_shader.get_uniform_location("view");
+	GLint  proj_loc = backface_shader.get_uniform_location("projection");
+
+	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.value_ptr());
+	glUniformMatrix4fv(view_loc, 1, GL_FALSE, (cgm::invert_orthogonal(camera.get_transform().object_to_world())).value_ptr());
+	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
+
+	//here you bind the framebuffer
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, bf_framebuffer);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
+
+	//while (!glfwWindowShouldClose(window)) {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	backface_shader.use();
+	volume.render(backface_shader);
+
+	glfwSwapBuffers(window);
+	glfwPollEvents();
+	//}
+	glDisable(GL_CULL_FACE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	///--------------------------------END 01--------------------------------------------- //
+
+	//  STEP 02 -  Render the front faces to texture////////////////////////////////////////////////
+
+
+	GLuint ff_framebuffer = gen_framebuffer(ff_texture, voxel_grid_width, voxel_grid_height);
+
+	//gls::Shader ff_shader("../../Applications-source/model_loader/shaders/frontface.vert", "../../Applications-source/model_loader/shaders/frontface.frag");
+	frontface_shader.use();
+
+	model_loc = frontface_shader.get_uniform_location("model");
+	view_loc = frontface_shader.get_uniform_location("view");
+	proj_loc = frontface_shader.get_uniform_location("projection");
+
+	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.value_ptr());
+	glUniformMatrix4fv(view_loc, 1, GL_FALSE, (cgm::invert_orthogonal(camera.get_transform().object_to_world())).value_ptr());
+	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ff_framebuffer);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
+	//while (!glfwWindowShouldClose(window)) {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	frontface_shader.use();
+	volume.render(frontface_shader);
+
+	glfwSwapBuffers(window);
+	glfwPollEvents();
+	//}
+	glDisable(GL_CULL_FACE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// delete the framebuffers
+	glDeleteFramebuffers(1, &bf_framebuffer);
+	glDeleteFramebuffers(1, &ff_framebuffer);
+
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////
+
+void render_voxels_test(const GLuint & tex_3d, GLFWwindow * window)
+{
+	cgs::Camera camera;
+	camera.scale_film_gate(voxel_grid_width, voxel_grid_height);
+	camera.get_transform().set_object_to_upright(cgm::mat4());
+	camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, 3.0f));
+	GLuint bf_texture, ff_texture;
+	
+	bf_texture = gen_2d_texture(voxel_grid_width, voxel_grid_height);
+	ff_texture = gen_2d_texture(voxel_grid_width, voxel_grid_height);
+
+	gls::Shader backface_shader("../../Applications-source/model_loader/shaders/backface.vert", "../../Applications-source/model_loader/shaders/backface.frag");
+	gls::Shader frontface_shader("../../Applications-source/model_loader/shaders/frontface.vert", "../../Applications-source/model_loader/shaders/frontface.frag");
+
+	// maybe pass a model matrix for the cube position
+	fface_bface_renderer(window, bf_texture, ff_texture, backface_shader, frontface_shader, camera);
+
+	//------------------- Step 03 - Ray marching----------------------------------------------------//
+
+	////////////////////////////////////DRAW A PLANE IN FRONT OF THE CAMERA/////////////////////////////////////////////////////////////
+	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	gls::Shader ray_marching_sh("../../Applications-source/model_loader/shaders/ray_marching.vert", "../../Applications-source/model_loader/shaders/ray_marching.frag");
+	ray_marching_sh.use();
+
+	gls::Mesh near_clipping_plane = plane_mesh();
+	
+	//orient the plane to match the camera's near clipping plane
+	float left, r, l, b, t, n, f;
+	camera.get_bnd(l, r, b, t, n, f);
+
+
+	cgm::mat4 model = cgm::scale(r * 2.0f, t * 2.0f, 1.0f);
+	model.concat_assign(cgm::translate(cgm::vec3(0.0f, 0.0f, -n - 0.0001f)));
+	model.concat_assign(camera.get_transform().object_to_upright());
+	model.concat_assign(cgm::translate(camera.get_transform().get_position()));
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	GLuint model_loc = ray_marching_sh.get_uniform_location("model");
+	GLuint view_loc = ray_marching_sh.get_uniform_location("view");
+	GLuint proj_loc = ray_marching_sh.get_uniform_location("projection");
+
+	GLint backface_loc = ray_marching_sh.get_uniform_location("exit_points");
+	GLint frontface_loc = ray_marching_sh.get_uniform_location("entry_points");
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, bf_texture);
+	glUniform1i(backface_loc, 1);
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, ff_texture);
+	glUniform1i(frontface_loc, 2);
+
+	GLint screen_size_loc = ray_marching_sh.get_uniform_location("screen_size");
+	cgm::vec2 screen_size(voxel_grid_width, voxel_grid_height);
+
+	GLint voxel_grid_loc = ray_marching_sh.get_uniform_location("voxel_grid_width");
+
+
+	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.value_ptr());
+	glUniformMatrix4fv(view_loc, 1, GL_FALSE, (cgm::invert_orthogonal(camera.get_transform().object_to_world())).value_ptr());
+	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
+
+	glUniform2fv(screen_size_loc, 1, screen_size.value_ptr());
+	glUniform1i(voxel_grid_loc, voxel_grid_width);
+
+
+	glBindTexture(GL_TEXTURE_3D, tex_3d);
+	glBindImageTexture(0, tex_3d, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
+
+	cgm::mat4 view;
+	while (!glfwWindowShouldClose(window)) {
+		
+		GLfloat current_frame = glfwGetTime();
+		delta_time = current_frame - last_frame;
+		last_frame = current_frame;
+
+		cgs::Euler euler(heading, pitch, bank);
+		cgm::mat4 cam_orientation = euler.get_rotation_mat4();
+		camera.get_transform().set_object_to_upright(cam_orientation);
+
+		cgm::vec3 right = cam_orientation.p();
+		cgm::vec3 up = cam_orientation.q();
+		cgm::vec3 forward = cam_orientation.r();
+
+		cgm::vec3 pos = do_movement(camera.get_transform().get_position(), right, up, forward);
+
+		camera.get_transform().set_position(pos);
+		view = cgm::invert_orthogonal(camera.get_transform().object_to_world());
+
+	
+
+		fface_bface_renderer(window, bf_texture, ff_texture, backface_shader, frontface_shader, camera);
+
+		ray_marching_sh.use();
+
+		//camera.get_bnd(l, r, b, t, n, f);
+
+
+		model = cgm::scale(r * 2.0f, t * 2.0f, 1.0f);
+		model.concat_assign(cgm::translate(cgm::vec3(0.0f, 0.0f, -n - 0.0001f)));
+		model.concat_assign(camera.get_transform().object_to_upright());
+		model.concat_assign(cgm::translate(camera.get_transform().get_position()));
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, bf_texture);
+		glUniform1i(backface_loc, 1);
+
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, ff_texture);
+		glUniform1i(frontface_loc, 2);
+
+		glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.value_ptr());
+		glUniformMatrix4fv(view_loc, 1, GL_FALSE, view.value_ptr());
+		glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
+
+		//glBindTexture(GL_TEXTURE_3D, tex_3d);
+		//glBindImageTexture(0, tex_3d, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		ray_marching_sh.use();
+		near_clipping_plane.render(ray_marching_sh);
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+
+	}
+}
+
 void render_voxels( const GLuint & tex_3d , GLFWwindow * window) 
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
 	glViewport(0, 0, voxel_grid_width, voxel_grid_height);
 
 	// Start 01 Step, render the back faces of the volume boulding box to a framebuffer //
 	
 	//generate the framebuffer's texture
 	GLuint bf_texture   =  gen_2d_texture(voxel_grid_width, voxel_grid_height);
-	
+	glCheckError();
+
 	// generate the framebuffer and assign the 2d texture to it
 	GLuint bf_framebuffer  =  gen_framebuffer(bf_texture, voxel_grid_width, voxel_grid_height);
-	
+	glCheckError();
 	gls::Mesh volume =  setup_volume_bbox();
 	
 	gls::Shader backface_shader("../../Applications-source/model_loader/shaders/backface.vert", "../../Applications-source/model_loader/shaders/backface.frag");
 	backface_shader.use();
-
+	glCheckError();
 	//create the 2d texture
 	cgs::Camera camera;
 	camera.scale_film_gate(voxel_grid_width, voxel_grid_height);
@@ -369,7 +576,8 @@ void render_voxels( const GLuint & tex_3d , GLFWwindow * window)
 
 	//here you bind the framebuffer
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, bf_framebuffer);
-
+	glCheckError();
+	
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 	
@@ -382,18 +590,26 @@ void render_voxels( const GLuint & tex_3d , GLFWwindow * window)
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	//}
+	glCheckError();
 	glDisable(GL_CULL_FACE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+	glDeleteFramebuffers(1, &bf_framebuffer);
+	glCheckError();
+	glDeleteProgram(backface_shader.get_program());
+	glCheckError();
 	///--------------------------------END 01--------------------------------------------- //
 	
 	//  STEP 02 -  Render the front faces to texture////////////////////////////////////////////////
 
 	GLuint ff_texture = gen_2d_texture(voxel_grid_width, voxel_grid_height);
+	glCheckError();
+	
 	GLuint ff_framebuffer = gen_framebuffer(ff_texture, voxel_grid_width, voxel_grid_height);
-
+	glCheckError();
+	
 	gls::Shader ff_shader("../../Applications-source/model_loader/shaders/frontface.vert", "../../Applications-source/model_loader/shaders/frontface.frag");
 	ff_shader.use();
+	glCheckError();
 
 	model_loc  =  ff_shader.get_uniform_location("model");
 	view_loc   =  ff_shader.get_uniform_location("view");
@@ -404,6 +620,7 @@ void render_voxels( const GLuint & tex_3d , GLFWwindow * window)
 	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
 
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ff_framebuffer);
+	glCheckError();
 
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -417,15 +634,21 @@ void render_voxels( const GLuint & tex_3d , GLFWwindow * window)
 	glfwSwapBuffers(window);
 	glfwPollEvents();
 	//}
+	glCheckError();
 	glDisable(GL_CULL_FACE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	glDeleteFramebuffers(1, &ff_framebuffer);
+	glCheckError();
+	glDeleteProgram(ff_shader.get_program());
+	glCheckError();
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
 	//------------------- Step 03 - Ray marching----------------------------------------------------//
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	gls::Shader ray_marching_sh("../../Applications-source/model_loader/shaders/ray_marching.vert", "../../Applications-source/model_loader/shaders/ray_marching.frag");
 	ray_marching_sh.use();
+	glCheckError();
 
 	////////////////////////////////////DRAW A PLANE IN FRONT OF THE CAMERA/////////////////////////////////////////////////////////////
 	gls::Mesh near_clipping_plane = plane_mesh();
@@ -451,11 +674,12 @@ void render_voxels( const GLuint & tex_3d , GLFWwindow * window)
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, bf_texture);
 	glUniform1i(backface_loc, 1);
+	glCheckError();
 
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, ff_texture);
 	glUniform1i(frontface_loc, 2);
-
+	glCheckError();
 	/*
 	GLint volume_loc = ray_marching_sh.get_uniform_location("voxel_image");
 	glActiveTexture(GL_TEXTURE3);
@@ -481,73 +705,19 @@ void render_voxels( const GLuint & tex_3d , GLFWwindow * window)
 	
 	glBindTexture(GL_TEXTURE_3D, tex_3d);
 	glBindImageTexture(0, tex_3d, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
-	
+	glCheckError();
 	
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//glActiveTexture(GL_TEXTURE1);
 		ray_marching_sh.use();
 		near_clipping_plane.render(ray_marching_sh);
-
+		//glCheckError();
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+	glCheckError();
 	//---------------------------- END 03 ------------------------------------------------- ///
-	
-	/*
-	volume_shader.use();
-	gls::Mesh mesh = plane_mesh();
-
-	//cgs::Camera camera;
-	camera.scale_film_gate(voxel_grid_width, voxel_grid_height);
-	camera.get_transform().set_object_to_upright(cgm::mat4());
-	camera.get_transform().set_position(cgm::vec3(126.0f, 126.0f, -3.0f));
-	
-	//orient the plane to match the camera's near clipping plane
-	float left, right, bottom, top, near, far;
-	camera.get_bnd(left, right, bottom, top, near, far);
-	
-	
-	model = cgm::scale(right * 2.0f, top * 2.0f, 1.0f);
-	model.concat_assign(cgm::translate(cgm::vec3(0.0f, 0.0f, -near - 0.0001f)));
-	model.concat_assign(camera.get_transform().object_to_upright());
-	model.concat_assign(cgm::translate(camera.get_transform().get_position()));
-
-
-	//cgs::Transform obj_transf;
-	//obj_transf.set_position(cgm::vec3(0.0f, 0.0f, 0.0f));
-
-	GLint  model_loc	   =  volume_shader.get_uniform_location("model");
-	GLint  view_loc		   =  volume_shader.get_uniform_location("view");
-	GLint  proj_loc		   =  volume_shader.get_uniform_location("projection");
-	GLint  slice_loc	   =  volume_shader.get_uniform_location("slice");
-	GLint  steps_loc	   =  volume_shader.get_uniform_location("steps");
-	GLint  cam_origin_loc  =  volume_shader.get_uniform_location("cam_origin");
-	GLint  box_min_loc     = volume_shader.get_uniform_location("box_min");
-	GLint  box_max_loc     = volume_shader.get_uniform_location("box_max");
-
-
-	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.value_ptr());
-	glUniformMatrix4fv(view_loc, 1, GL_FALSE, (cgm::invert_orthogonal(camera.get_transform().object_to_world())).value_ptr() );
-	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
-
-	glUniform1i(slice_loc, 0);
-	glUniform1i(steps_loc, 240);
-	glUniform3fv(cam_origin_loc, 1, camera.get_transform().get_position().value_ptr());
-	glUniform3fv(box_min_loc, 1, cgm::vec3().value_ptr());
-	glUniform3fv(box_max_loc, 1, cgm::vec3(voxel_grid_width - 1, voxel_grid_width - 1, voxel_grid_width - 1).value_ptr());
-
-	glBindTexture(GL_TEXTURE_3D, tex_3d);
-	glBindImageTexture(0, tex_3d, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
-	while (!glfwWindowShouldClose(window)) {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		volume_shader.use();
-		mesh.render(volume_shader);
-
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	} */
 }
 
 void voxels_slice_visualization(const GLuint & tex_3d, GLFWwindow * window)
@@ -717,8 +887,9 @@ void voxelize_scene(const gls::Model & m, const gls::Shader & vs, const GLuint &
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
 	//gls::Shader volume_shader("../../Applications-source/model_loader/shaders/ray_marching.vert", "../../Applications-source/model_loader/shaders/ray_marching.frag");
-
-	render_voxels( tex_id, window);
+	glDeleteProgram(vs.get_program());
+	glCheckError();
+	render_voxels_test( tex_id, window);
 	//voxels_slice_visualization(tex_id, window);
 }
 
@@ -748,7 +919,7 @@ int main(int argc, char *argv[])
 	glfwSetKeyCallback(window, key_callback);
 
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	//glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
 
 	//Initialize GLEW 
 	glewExperimental = GL_TRUE;

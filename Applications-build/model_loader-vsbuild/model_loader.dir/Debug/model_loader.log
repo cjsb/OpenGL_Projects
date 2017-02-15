@@ -1,11 +1,12 @@
 ﻿  model_loader.cpp
-C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(185): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(186): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(190): warning C4244: '*=': conversion from 'double' to 'float', possible loss of data
-C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(191): warning C4244: '*=': conversion from 'double' to 'float', possible loss of data
-C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(298): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-  C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\stdio.h(205): note: see declaration of 'fopen'
+C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(207): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(208): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(212): warning C4244: '*=': conversion from 'double' to 'float', possible loss of data
+C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(213): warning C4244: '*=': conversion from 'double' to 'float', possible loss of data
 C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(466): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(827): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(844): warning C4101: 'device_aspect_ratio': unreferenced local variable
+C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(485): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(440): warning C4101: 'left': unreferenced local variable
+C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(690): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(998): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\model_loader\src\model_loader.cpp(1015): warning C4101: 'device_aspect_ratio': unreferenced local variable
   model_loader.vcxproj -> C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\model_loader-vsbuild\Debug\model_loader.exe

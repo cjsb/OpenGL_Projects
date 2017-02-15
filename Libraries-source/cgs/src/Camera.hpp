@@ -20,6 +20,7 @@ namespace cgs {
         void    set_mode(Projection_type m);
         const   cgm::mat4 & get_projection() const {return projection;}
         Transform & get_transform() {return transform;}
+		const Transform & get_transform() const { return transform; }
         int     get_image_width()  const {return image_width;}
         int     get_image_height() const {return image_height;}
         float   get_device_aspect_ratio() const { return image_width / (float)image_height ;}
