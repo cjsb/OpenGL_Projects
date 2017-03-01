@@ -1,2 +1,11 @@
-﻿  Shader.cpp
+﻿  Building Custom Rule C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Libraries-source/gls/CMakeLists.txt
+  CMake does not need to re-run because C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-build\gls-vsbuild\CMakeFiles\generate.stamp is up-to-date.
+  Shader.cpp
+  Texture.cpp
+  Mesh.cpp
+C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-source\gls\src\Mesh.cpp(128): warning C4244: 'argument': conversion from 'GLuint' to 'GLfloat', possible loss of data
+  Model.cpp
+C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-source\gls\src\Model.cpp(145): warning C4018: '<': signed/unsigned mismatch
+C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-source\gls\src\Model.cpp(149): warning C4018: '<': signed/unsigned mismatch
+  Generating Code...
   gls.vcxproj -> C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Libraries-build\gls-vsbuild\Debug\gls.lib

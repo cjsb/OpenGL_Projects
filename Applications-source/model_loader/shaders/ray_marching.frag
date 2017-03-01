@@ -59,7 +59,7 @@ void main()
 	int voxel_grid_width = 1600; // make uniform
 	vec4 color;
 	float length_acum = 0.0f;
-	for (int i = 0; i < 1000; ++i ) {
+	for (int i = 0; i < l; ++i ) {
 		color =  imageLoad(voxel_image, ivec3(voxel_coord) );
 		
 		//color  = texture(voxel_image, voxel_coord);
@@ -72,7 +72,7 @@ void main()
 		}
 
 		if (length_acum >= l) {
-			color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+			color = vec4(0.0f, 0.0f, 1.0f, 1.0f);
 			break;
 		}
 	}

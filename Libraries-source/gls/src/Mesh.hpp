@@ -22,6 +22,7 @@ namespace gls {
 		}
 	void  do_shader_plumbing(const Shader & shader,const std::string & v_pos_name, const std::string & v_normal_name, const std::string & v_uv_name) const;
 	void  render(const Shader & shader) const;
+	const std::vector<Vertex1P1N1UV> & get_vertices() const { return m_vertices; }
 	private:
 		void setup_mesh();
 		std::vector<Vertex1P1N1UV>  m_vertices;

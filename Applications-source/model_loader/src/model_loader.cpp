@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cmath>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -38,11 +39,16 @@ float  heading, pitch, bank;
 float  cam_speed = 6.0f;
 
 /// voxealization data
-int voxel_grid_width  = 512;
-int voxel_grid_height = 512; 
+int		voxel_grid_width  = 512;
+int	    voxel_grid_height = 512; 
+GLuint  num_voxel_fragments = 0;
 
-//// FOR TEST
-GLuint g_volTexObj;
+// voxel fragment list buffers
+GLuint atomic_counter;
+GLuint  voxel_pos_tex, voxel_pos_tex_buff;
+GLuint  voxel_col_tex, voxel_col_tex_buff;
+
+void voxels_slice_visualization(const GLuint & tex_3d, GLFWwindow * window);
 
 GLenum glCheckError_(const char *file, int line)
 {
@@ -223,6 +229,41 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	}
 }
 
+void gen_linear_buff(const int size, GLenum format, GLuint *tex, GLuint *tbo) 
+{
+	if ( (*tbo) > 0) {
+		glDeleteBuffers(1, tbo);
+	}
+
+	glGenBuffers(1, tbo);
+	glBindBuffer(GL_TEXTURE_BUFFER, *tbo);
+	glBufferData(GL_TEXTURE_BUFFER, size, 0, GL_STATIC_DRAW);
+	glCheckError();
+
+	if ((*tex) > 0) {
+		glDeleteTextures(1, tex);
+	}
+
+	glGenTextures(1, tex);
+	glBindTexture(GL_TEXTURE_BUFFER, *tex);
+	glTexBuffer(GL_TEXTURE_BUFFER, format, *tbo);
+	glBindBuffer(GL_TEXTURE_BUFFER, 0);
+	glCheckError();
+}
+
+GLuint gen_atomic_buff() 
+{
+	GLuint init = 0;
+	GLuint buffer;
+
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, buffer);
+	glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), &init, GL_STATIC_DRAW);
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
+
+	return buffer;
+}
+
 GLuint gen_2d_texture(const GLuint text_width, const GLuint text_height)
 {
 	GLuint back_face_text;
@@ -315,7 +356,7 @@ GLuint gen_framebuffer(const GLuint text_id, const GLuint text_width, const GLui
 	return framebuffer;
 }
 
-void fface_bface_renderer(GLFWwindow * window, GLuint & bf_texture, GLuint & ff_texture, const gls::Shader & backface_shader, const gls::Shader & frontface_shader  ,cgs::Camera & camera ) 
+void fface_bface_renderer(GLFWwindow * window, const gls::Mesh & volume ,GLuint & bf_texture, GLuint & ff_texture, const gls::Shader & backface_shader, const gls::Shader & frontface_shader  ,cgs::Camera & camera ) 
 {
 	
 	glViewport(0, 0, voxel_grid_width, voxel_grid_height);
@@ -327,7 +368,7 @@ void fface_bface_renderer(GLFWwindow * window, GLuint & bf_texture, GLuint & ff_
 	// generate the framebuffer and assign the 2d texture to it
 	GLuint bf_framebuffer = gen_framebuffer(bf_texture, voxel_grid_width, voxel_grid_height);
 
-	gls::Mesh volume = setup_volume_bbox();
+	//gls::Mesh volume = setup_volume_bbox();
 
 	//gls::Shader backface_shader("../../Applications-source/model_loader/shaders/backface.vert", "../../Applications-source/model_loader/shaders/backface.frag");
 	backface_shader.use();
@@ -423,8 +464,9 @@ void render_voxels_test(const GLuint & tex_3d, GLFWwindow * window)
 	gls::Shader backface_shader("../../Applications-source/model_loader/shaders/backface.vert", "../../Applications-source/model_loader/shaders/backface.frag");
 	gls::Shader frontface_shader("../../Applications-source/model_loader/shaders/frontface.vert", "../../Applications-source/model_loader/shaders/frontface.frag");
 
+	gls::Mesh volume = setup_volume_bbox();
 	// maybe pass a model matrix for the cube position
-	fface_bface_renderer(window, bf_texture, ff_texture, backface_shader, frontface_shader, camera);
+	fface_bface_renderer(window, volume, bf_texture, ff_texture, backface_shader, frontface_shader, camera);
 
 	//------------------- Step 03 - Ray marching----------------------------------------------------//
 
@@ -501,7 +543,7 @@ void render_voxels_test(const GLuint & tex_3d, GLFWwindow * window)
 
 	
 
-		fface_bface_renderer(window, bf_texture, ff_texture, backface_shader, frontface_shader, camera);
+		fface_bface_renderer(window, volume, bf_texture, ff_texture, backface_shader, frontface_shader, camera);
 
 		ray_marching_sh.use();
 
@@ -537,6 +579,135 @@ void render_voxels_test(const GLuint & tex_3d, GLFWwindow * window)
 
 	}
 }
+
+void voxelize_scene_test(const gls::Model & m, const gls::Shader & vs, const GLuint & tex_id, const int mode , const unsigned pass_number, GLFWwindow *window)
+{
+	glViewport(0, 0, voxel_grid_width, voxel_grid_height);
+
+	//Disable some fixed-function opeartions
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	//////////////////////////////////////////////////////////////////////
+	cgm::vec3 b_box_max = m.bounding_box_max();
+	cgm::vec3 b_box_min = m.bounding_box_min();
+	cgm::vec3 scale_max = cgm::vec3(1.0f / b_box_max.x, 1.0f / b_box_max.y, 1.0f / b_box_max.z);
+
+	
+	float t_x = 0.0f;
+	float t_y = 0.0f;
+	float t_z = 0.0f;
+	
+	if (b_box_max.x > std::fabs(b_box_min.x)) {
+		t_x = -((b_box_max.x + std::fabs(b_box_min.x) ) / 2.0f + b_box_min.x);
+	}
+	else {
+		t_x = (b_box_max.x + std::fabs(b_box_min.x) ) / 2.0f - b_box_max.x;
+	}
+	if (b_box_max.y > std::fabs(b_box_min.y)) {
+		t_y = -((b_box_max.y + std::fabs(b_box_min.y)) / 2.0f + b_box_min.y);
+	}
+	else {
+		t_y = (b_box_max.y + std::fabs(b_box_min.y)) / 2.0f - b_box_max.y;
+	}
+	if (b_box_max.z > std::fabs(b_box_min.z)) {
+		t_z = -((b_box_max.z + std::fabs(b_box_min.z)) / 2.0f + b_box_min.z);
+	}
+	else {
+		t_z = (b_box_max.z + std::fabs(b_box_min.z)) / 2.0f - b_box_max.z;
+	}
+	
+	float s = scale_max.x;
+
+	if ((scale_max.x < scale_max.y) && (scale_max.x < scale_max.z)) {
+		s = scale_max.x;
+//		std::cout << "min scale is x = " << s << std::endl;
+	}
+	else if ((scale_max.y < scale_max.x) && (scale_max.y < scale_max.z)) {
+		s = scale_max.y;
+	//	std::cout << "min scale is y = " << s << std::endl;
+	}
+	else {
+		s = scale_max.z;
+//		std::cout << "min scale is z = " << s << std::endl;
+	}
+
+//	std::cout << "need to translate in x " << t_x * scale_max.x << std::endl;
+//	std::cout << "need to translate in y " << t_y * scale_max.y << std::endl;
+//	std::cout << "need to translate in y " << t_z * scale_max.z << std::endl;
+	////////////////////////////////////////////////////////////////////////
+
+	cgs::Camera camera;
+	camera.set_mode(cgs::Camera::ORTHOGRAPHIC);
+	camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, 2.0f));
+
+	cgm::mat4 ortho = cgm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 3.0f);
+
+	cgs::Transform obj_transf;
+	obj_transf.set_object_to_upright(cgm::concat_mat4(cgm::scale(s, s, s), cgm::rotate(cgm::vec3(1.0f, 0.0f, 0.0f), 0.0f)));
+	obj_transf.set_position(cgm::vec3(t_x * scale_max.x, t_y * scale_max.y , t_z * scale_max.z));
+
+
+	GLint m_loc = vs.get_uniform_location("M");
+	glCheckError();
+	GLint v_loc = vs.get_uniform_location("V");
+	glCheckError();
+	GLint p_loc = vs.get_uniform_location("P");
+	GLint scene_scale_loc = vs.get_uniform_location("sceneScale");
+	GLint pass_no_loc	  = vs.get_uniform_location("u_pass_no");
+	GLint mode_loc = vs.get_uniform_location("u_mode");
+
+	glUniformMatrix4fv(m_loc, 1, GL_FALSE, obj_transf.object_to_world().value_ptr());
+	glUniformMatrix4fv(v_loc, 1, GL_FALSE, cgm::invert_orthogonal(camera.get_transform().object_to_world()).value_ptr());
+	glUniformMatrix4fv(p_loc, 1, GL_FALSE, ortho.value_ptr());
+	glUniform1f(scene_scale_loc, 1.0f);
+	glUniform1i(mode_loc, mode);
+	
+	if (mode == 1) { // 3D texture for storage
+		glBindTexture(GL_TEXTURE_3D, tex_id);
+		glBindImageTexture(0, tex_id, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+	}
+	else if (mode == 2) { // sparse voxel octree for storage
+		glUniform1i(pass_no_loc, pass_number);
+
+		glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, atomic_counter);
+
+		if (pass_number == 2) {
+			std::cout << "In pass 2" << std::endl;
+			glBindImageTexture(0, voxel_pos_tex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGB10_A2UI);
+			glBindImageTexture(0, voxel_col_tex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);
+			glCheckError();
+		}
+		else {
+			std::cout << "In pass 1" << std::endl;
+		}
+	}
+	
+	//while (!glfwWindowShouldClose(window)) {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	vs.use();
+	m.render(vs);
+
+	glfwSwapBuffers(window);
+	glfwPollEvents();
+//	}
+	glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);
+
+	//glGenerateMipmap(GL_TEXTURE_3D);
+
+	glBindTexture(GL_TEXTURE_3D, 0);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+	
+	glDeleteProgram(vs.get_program());
+	glCheckError();
+	//render_voxels_test(tex_id, window);
+	//voxels_slice_visualization(tex_id, window);
+}
+
 
 void render_voxels( const GLuint & tex_3d , GLFWwindow * window) 
 {
@@ -925,27 +1096,68 @@ int main(int argc, char *argv[])
 	glewExperimental = GL_TRUE;
 	glewInit();
 
+	std::string path = "../../Resources/Dragon/dragon2.obj";
+	std::string mode = "svo";
+	if (argc > 1) {
+	    path = argv[1];
+		path = "../../Resources/" + path;
+		std::cout << "loading model: " << path;
+		std::cout << std::endl;
 
+		if (argc > 2) {
+			mode = argv[2];
+		}
+	}
+	
 	//gls::Mesh mesh = setup_box();
 	
 
 	//gls::Shader shader("../../Applications-source/model_loader/shaders/vertex.vert", "../../Applications-source/model_loader/shaders/fragment2.frag");
 	gls::Shader shader("C:/Users/mateu/Documents/Projects/Applications/model_loader/source/shaders/vertex2.vert", "C:/Users/mateu/Documents/Projects/Applications/model_loader/source/shaders/fragment2.frag");
 	
-	
-	gls::Shader voxelize_shader("../../Applications-source/model_loader/shaders/voxelize.vert", "../../Applications-source/model_loader/shaders/voxelize.frag", "../../Applications-source/model_loader/shaders/voxelize.geom");
-	
-	//shader.use();
+	gls::Shader voxelize_shader("../../Applications-source/model_loader/shaders/voxelization.vert", "../../Applications-source/model_loader/shaders/voxelization.frag", "../../Applications-source/model_loader/shaders/voxelization.geom");
 	voxelize_shader.use();
-	gls::Model model_suit("../../Resources/Cow/cow.obj");
-	
+	gls::Model model(path);
 
-	GLuint tex_3d_id = gen_3d_texture(voxel_grid_width);
+	if (mode == "texture") {
+		GLuint tex_3d_id = gen_3d_texture(voxel_grid_width);
+		voxelize_scene_test(model, voxelize_shader, tex_3d_id, 1, 0, window);
+		render_voxels_test(tex_3d_id, window);
+	}
+	else if (mode == "svo") {
+		
+		//generate the voxel fragment list
+		atomic_counter = gen_atomic_buff();
+		 voxelize_scene_test(model, voxelize_shader, 0, 2, 1, window);
+		 glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
+		 glCheckError();
 
-	voxelize_scene(model_suit ,voxelize_shader, tex_3d_id, window);
-	std::cout << "finish" << std::endl;
-	
-	//g_volTexObj = initVol3DTex("../../Resources/head256.raw", 256, 256, 225);
+		 glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter);
+		 GLuint* count = (GLuint*)glMapBufferRange(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+		 glCheckError();
+
+		 num_voxel_fragments = count[0];
+		 std::cout << "Number of Entries in Voxel Fragment List: " << num_voxel_fragments << std::endl;
+
+		 //create the arrays/buffers for the voxel fragment list
+		 gen_linear_buff(sizeof(GLuint) * num_voxel_fragments, GL_R32UI, &voxel_pos_tex, &voxel_pos_tex_buff);
+		 gen_linear_buff(sizeof(GLuint) * num_voxel_fragments, GL_RGBA8, &voxel_col_tex, &voxel_col_tex_buff);
+
+		 //reset atomic counter
+		 memset(count, 0, sizeof(GLuint));
+
+		 glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
+		 glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
+
+		 voxelize_scene_test(model, voxelize_shader, 0, 2, 2, window);
+		 glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+		 //octree subdivision
+
+	}
+
+	//shader.use();
+
 	//render_voxels(g_volTexObj, window);
 	return 0;
 
@@ -970,21 +1182,20 @@ int main(int argc, char *argv[])
 	camera.set_far_clipping_plane(160.0f);
 	camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, 2.0f));
 	cgm::mat4  aux = cgm::scale(0.2f, 0.2f, 0.2f);
-	cgm::mat4   model = cgm::concat_mat4(aux, model_transform.object_to_world());
+	cgm::mat4   M = cgm::concat_mat4(aux, model_transform.object_to_world());
 	cgm::mat4   view = cgm::invert_orthogonal(camera.get_transform().object_to_world());
 	
 	
 	GLint model_loc = shader.get_uniform_location("model");
-	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.value_ptr());
+	glUniformMatrix4fv(model_loc, 1, GL_FALSE, M.value_ptr());
 	
 
 	GLint view_loc = shader.get_uniform_location("view");
 	glUniformMatrix4fv(view_loc, 1, GL_FALSE, view.value_ptr());
 
 	GLint p_loc = shader.get_uniform_location("projection");
-	/////// MATRIXES FOR VOXEALIZATION //////////////////////////////////////
-	
-	////////////////////////////////////////////////////////////////////////
+
+
 	glUniform3fv(light_color_loc, 1, &light_color.x);
 	glUniform3fv(light_pos_loc, 1,  &light_pos.x);
 	glUniform3fv(cam_pos_loc, 1, &(camera.get_transform().get_position().x));
@@ -1026,7 +1237,7 @@ int main(int argc, char *argv[])
 		glUniformMatrix4fv(view_loc, 1, GL_FALSE, view.value_ptr());
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shader.use();
-		model_suit.render(shader);
+		model.render(shader);
 		//mesh.render(shader);
 
 		glfwSwapBuffers(window);

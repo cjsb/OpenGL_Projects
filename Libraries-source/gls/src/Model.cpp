@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 #include "Model.hpp"
 #include "Mesh.hpp"
 #include "Vertex1P1N1UV.hpp"
@@ -129,4 +130,36 @@ std::ostream & gls::print_model(std::ostream & os, const gls::Model & model)
 	}
 
 	return os;
+}
+
+void gls::Model::set_bounding_box() 
+{
+	float max_x = m_meshes[0].get_vertices()[0].m_p.x;
+	float max_y = m_meshes[0].get_vertices()[0].m_p.y;
+	float max_z = m_meshes[0].get_vertices()[0].m_p.z;
+
+	float min_x = m_meshes[0].get_vertices()[0].m_p.x;
+	float min_y = m_meshes[0].get_vertices()[0].m_p.y;
+	float min_z = m_meshes[0].get_vertices()[0].m_p.z;
+
+	for (int i = 0; i < m_meshes.size(); ++i) { // for each mesh 
+		gls::Mesh mesh = m_meshes[i];
+		const std::vector<Vertex1P1N1UV> & vertices = mesh.get_vertices();
+		
+		for (int j = 0; j < vertices.size(); ++j) {
+			gls::Vertex1P1N1UV vertex = vertices[j];
+
+			max_x = std::max(max_x, vertex.m_p.x);
+			max_y = std::max(max_y, vertex.m_p.y);
+			max_z = std::max(max_z, vertex.m_p.z);
+
+			min_x = std::min(min_x, vertex.m_p.x);
+			min_y = std::min(min_y, vertex.m_p.y);
+			min_z = std::min(min_z, vertex.m_p.z);
+
+		}
+	}
+
+	m_b_box_max = cgm::vec3(max_x, max_y, max_z);
+	m_b_box_min = cgm::vec3(min_x, min_y, min_z);
 }
