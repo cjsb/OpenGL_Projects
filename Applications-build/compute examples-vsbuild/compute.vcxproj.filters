@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\compute examples\src\compute.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-source\compute examples\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{390822C8-24CF-3D36-BAB8-DB51FD899A74}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

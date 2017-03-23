@@ -1,0 +1,3 @@
+C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/compute examples-vsbuild/CMakeFiles/compute.dir
+C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/compute examples-vsbuild/CMakeFiles/ALL_BUILD.dir
+C:/Users/mateu/Documents/GitHub/OpenGL_Projects/Applications-build/compute examples-vsbuild/CMakeFiles/ZERO_CHECK.dir

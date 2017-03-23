@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\mateu\Documents\GitHub\OpenGL_Projects\Applications-build\compute examples-vsbuild\CMakeFiles\f8337a73348166b1f2902c83e0cddd49\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{42941ECE-F395-3CE3-B3F4-FD578D5A7425}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

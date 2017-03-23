@@ -140,6 +140,50 @@ gls::Shader::Shader(const string & vert_file_name, const string & frag_file_name
     glDeleteShader(frag_obj);
 }
 
+gls::Shader::Shader(const std::string & compute_file) 
+{
+	ifstream in(compute_file);
+
+	string line;
+	string source;
+	while (getline(in, line)) {
+		source += line + '\n';
+	}
+	in.close();
+
+	GLchar *compute_src = (GLchar *)source.c_str();
+
+	GLuint compute_obj = glCreateShader(GL_COMPUTE_SHADER);
+
+	glShaderSource(compute_obj, 1, &compute_src, NULL);
+	glCompileShader(compute_obj);
+
+	GLint is_compiled = 0;
+	
+	glGetShaderiv(compute_obj, GL_COMPILE_STATUS, &is_compiled);
+	if (is_compiled == GL_FALSE) {
+		GLint max_length = 0;
+		glGetShaderiv(compute_obj, GL_INFO_LOG_LENGTH, &max_length);
+
+		std::vector<GLchar> error_log(max_length);
+		glGetShaderInfoLog(compute_obj, max_length, &max_length, &error_log[0]);
+
+		std::string message = std::string(error_log.begin(), error_log.end());
+
+		cerr << "Error compiling compute shader\n Log: \n" << message << endl;
+
+		glDeleteShader(compute_obj);
+	}
+
+	m_program = glCreateProgram();
+	glAttachShader(m_program, compute_obj);
+
+	glLinkProgram(m_program);
+
+	glDetachShader(m_program, compute_obj);
+	glDeleteShader(compute_obj);
+}
+
 GLint gls::Shader::get_uniform_location(const std::string & u_name) const
 {
 	GLint location = glGetUniformLocation(m_program, u_name.c_str());
