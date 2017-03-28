@@ -1,0 +1,64 @@
+#version 430
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+uniform int u_num_voxel_frag;
+uniform int u_level;
+uniform int u_voxel_dim;
+
+//voxel fragment list, position array
+uniform layout(binding = 0, rgb10_a2ui) uimageBuffer u_voxel_pos; 
+
+// octree node pool , subpointer array
+uniform layout(binding = 1, r32ui) uimageBuffer u_octree_buf;
+
+void main() 
+{
+	// get the voxel fragment index associated with this thread (invocation)
+	uint voxel_frag_id = gl_GlobalInvocationID.y * 1024 + gl_GlobalInvocationID.x;
+	
+	if(voxel_frag_id >= u_num_voxel_frag) { // check if the index is within the range of the voxel fragment array
+		return;
+	}
+
+	uvec3 u_min, u_max;
+	uvec4 loc; // for the voxel fragment position inside the volume
+	int   child_id = 0;
+	uint node, subnode;
+	uint voxel_dim = u_voxel_dim;
+	bool b_flag	   = true;
+
+	// Get the coordinate of the voxel associated with this thread
+	loc = imageLoad(u_voxel_pos, int(voxel_frag_id) );
+
+	// get the maximun and minimun coordinate for the root node volume  
+	u_min  =  uvec3(0, 0, 0);
+	u_max  =  uvec3(voxel_dim, voxel_dim, voxel_dim);
+
+	//get root node child pointer
+	node = imageLoad(u_octree_buf, child_id).r;
+
+	for (int i = 0; i < u_level; ++i) {
+		voxel_dim /= 2;
+		if( (node & 0x80000000 ) == 0 ) {
+		    b_flag = false;
+		    break;
+		}
+		child_id = int(node & 0x7FFFFFFF);  //mask out flag bit to get child id, i.e, pointer to the node's child
+
+		subnode  =   clamp( int(1 + loc.x - u_min.x - voxel_dim), 0, 1 );
+	    subnode  +=  4 * clamp( int(1 + loc.y - u_min.y- voxel_dim), 0, 1 );
+	    subnode  +=  2 * clamp( int(1 + loc.z - u_min.z- voxel_dim), 0, 1 );
+	    child_id +=  int(subnode);
+	
+	    u_min.x  +=  voxel_dim * clamp( int(1 + loc.x - u_min.x - voxel_dim), 0, 1 );
+	    u_min.y  +=  voxel_dim * clamp( int(1 + loc.y - u_min.y- voxel_dim),  0, 1 );
+	    u_min.z  +=  voxel_dim * clamp( int(1 + loc.z - u_min.z- voxel_dim),  0, 1 );
+
+		node = imageLoad( u_octree_buf, child_id ).r;
+	}
+
+	if( b_flag ) {
+	    node |= 0x80000000; //set the most significant bit
+	    imageStore( u_octree_buf, child_id, uvec4(node,0,0,0) );
+    }
+}

@@ -36,17 +36,27 @@ double prev_y_pos = 0.0f;
 double mouse_sensitivity = 0.2;
 float  heading, pitch, bank;
 
-float  cam_speed = 6.0f;
+float  cam_speed = 2.0f;
 
 /// voxealization data
-int		voxel_grid_width  = 512;
-int	    voxel_grid_height = 512; 
+int		voxel_grid_width  = 256;
+int	    voxel_grid_height = 256; 
 GLuint  num_voxel_fragments = 0;
 
 // voxel fragment list buffers
 GLuint atomic_counter;
-GLuint  voxel_pos_tex, voxel_pos_tex_buff;
-GLuint  voxel_col_tex, voxel_col_tex_buff;
+GLuint  voxel_pos_tex, voxel_pos_tex_buff; // buffer for the voxel fragments postion
+GLuint  voxel_col_tex, voxel_col_tex_buff; // buffer for the voxel fragments color
+
+// sparse voxel octree' data 
+/* node pool, each node has a 32bit subnode pointer part
+ * and a 32 bit data part, 0: pointer, 1: data
+ */
+GLuint octree_node_tex[2] = { 0 }; 
+GLuint octree_node_tbo[2] = { 0 };
+int    num_octree_levels = 7;
+
+
 
 void voxels_slice_visualization(const GLuint & tex_3d, GLFWwindow * window);
 
@@ -632,10 +642,6 @@ void voxelize_scene_test(const gls::Model & m, const gls::Shader & vs, const GLu
 //		std::cout << "min scale is z = " << s << std::endl;
 	}
 
-//	std::cout << "need to translate in x " << t_x * scale_max.x << std::endl;
-//	std::cout << "need to translate in y " << t_y * scale_max.y << std::endl;
-//	std::cout << "need to translate in y " << t_z * scale_max.z << std::endl;
-	////////////////////////////////////////////////////////////////////////
 
 	cgs::Camera camera;
 	camera.set_mode(cgs::Camera::ORTHOGRAPHIC);
@@ -1064,6 +1070,391 @@ void voxelize_scene(const gls::Model & m, const gls::Shader & vs, const GLuint &
 	//voxels_slice_visualization(tex_id, window);
 }
 
+void build_svo() 
+{
+	std::cout << "node_flag:" << std::endl;
+	gls::Shader node_flag_sh("../../Applications-source/model_loader/shaders/node_flag.comp");
+	std::cout << "node_alloc:" << std::endl;
+	gls::Shader node_alloc_sh("../../Applications-source/model_loader/shaders/node_alloc.comp");
+	std::cout << "node_init:" << std::endl;
+	gls::Shader node_init_sh("../../Applications-source/model_loader/shaders/node_init.comp");
+	std::cout << "leaf_store:" << std::endl;
+	gls::Shader leaf_store_sh("../../Applications-source/model_loader/shaders/leaf_store.comp");
+
+	GLuint  tile_alloc_counter = 0;			// counts the numer of tiles allocated, 1 tile = 8 nodes
+	std::vector<unsigned> nodes_per_level;  //the vector records the number of nodes in each tree level
+	nodes_per_level.push_back(1);			// root level has one node
+
+	// compute the maximun number of nodes for the octree with 'num_octree_levels' levels
+	int  max_num_nodes =  1;
+	int  temp		   =  1;
+	for (int i = 1; i <= num_octree_levels; ++i) {
+		temp *= 8;
+		max_num_nodes += temp;
+	}
+
+	std::cout << "Max number of octree nodes: "  << max_num_nodes << std::endl;
+	std::cout << "Size of node pool allocated: " << max_num_nodes << std::endl;
+
+	//allocate the octree node pool
+	
+	// this os for storing the subnode pointer part
+	gen_linear_buff(sizeof(GLuint) * max_num_nodes, GL_R32UI, &octree_node_tex[0], &octree_node_tbo[0]);
+
+	//this is for storing the data (color) part
+	gen_linear_buff(sizeof(GLuint) * max_num_nodes, GL_R32UI, &octree_node_tex[1], &octree_node_tbo[1]);
+
+	//atomic counter for counting the number of tiles allocated in each level
+	tile_alloc_counter = gen_atomic_buff();
+	glCheckError();
+
+	int node_offset   =  0; //the index of the first node in the octree node pool on the last level
+	int alloc_offset  =  1; // the index of the remaining free space in the octree node pool
+
+	int data_width = 1024;
+	int data_height = (num_voxel_fragments + 1023) / data_width;
+	int group_dim_x = data_width / 8;
+	int group_dim_y = (data_height + 7) / 8;
+
+	for (int i = 0; i < num_octree_levels; ++i) {
+		/* 1. Launch one thread per voxel fragment and flag the nodes that need to be subdivided, 
+		 * i.e, nodes that have voxel fragmens in them
+		 */
+		node_flag_sh.use();
+		glUniform1i(node_flag_sh.get_uniform_location("u_num_voxel_frag"), num_voxel_fragments);
+		glUniform1i(node_flag_sh.get_uniform_location("u_level"), i);
+		glUniform1i(node_flag_sh.get_uniform_location("u_voxel_dim"), voxel_grid_width);
+		glBindImageTexture(0, voxel_pos_tex, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGB10_A2UI);
+		glBindImageTexture(1, octree_node_tex[0], 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32UI);
+		glDispatchCompute(group_dim_x, group_dim_y, 1);
+		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+		/* 2. Launch one thead per node in the last level of the octree and,
+		 * allocate tiles for the nodes marked to be subdivided
+		 */
+		node_alloc_sh.use();
+		int num_threads = nodes_per_level[i];
+		std::cout << "number of tagged nodes in steps " << i << ": " << num_threads << std::endl;
+
+		glUniform1i(node_alloc_sh.get_uniform_location("u_num"),   num_threads);
+		glUniform1i(node_alloc_sh.get_uniform_location("u_start"),  node_offset );
+		glUniform1i(node_alloc_sh.get_uniform_location("u_alloc_start"), alloc_offset);
+		glBindImageTexture(0, octree_node_tex[0], 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32UI);
+		glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, tile_alloc_counter);
+
+		// calculate how many workgroups of 64 "threads" are necessary to cover all the nodes in the last level
+		int alloc_group_dim = (nodes_per_level[i] + 63) / 64; 
+		glDispatchCompute(alloc_group_dim, 1, 1);
+		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
+
+		//Get the number of node tiles to initialize in the next step
+		GLuint  tiles_allocated;
+		GLuint  reset  =  0;
+		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, tile_alloc_counter);
+		glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &tiles_allocated);
+		glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &reset); //reset counter to zero
+		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
+
+		/* 3. Launch one thread per node in the next level of the octree and,
+		 *   initialize them
+		 */
+		std::cout << "tiles allocated in step" << i << ": " << tiles_allocated << std::endl;
+		int nodes_allocated = tiles_allocated * 8;
+		node_init_sh.use();
+		glUniform1i(node_init_sh.get_uniform_location("u_num"), nodes_allocated);
+		glUniform1i(node_init_sh.get_uniform_location("u_alloc_start"), alloc_offset);
+		glBindImageTexture(0, octree_node_tex[0], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R32UI);
+		glBindImageTexture(1, octree_node_tex[1], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R32UI);
+
+		data_width = 1024;
+		data_height = (nodes_allocated + 1023) / data_width;
+		int init_group_dim_x = data_width / 8;
+		int init_group_dim_y = (data_height + 7) / 8;
+		glDispatchCompute(init_group_dim_x, init_group_dim_y, 1);
+		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+		//update offsets for the next level
+		nodes_per_level.push_back(nodes_allocated);
+		
+		node_offset   +=  nodes_per_level[i];
+		alloc_offset  +=  nodes_allocated;
+
+		std::cout << "SVO build iteration";
+		glCheckError();
+		std::cout << std::endl;
+	}
+	std::cout << "Total nodes consumed: " << alloc_offset << std::endl;
+
+	//Flag nonempty leaf nodes for storing color information on the next step
+	node_flag_sh.use();
+	glUniform1i(node_flag_sh.get_uniform_location("u_num_voxel_frag"), num_voxel_fragments);
+	glUniform1i(node_flag_sh.get_uniform_location("u_level"), num_octree_levels);
+	glUniform1i(node_flag_sh.get_uniform_location("u_voxel_dim"), voxel_grid_width);
+	glBindImageTexture(0, voxel_pos_tex, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGB10_A2UI);
+	glBindImageTexture(1, octree_node_tex[0], 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32UI);
+	glDispatchCompute(group_dim_x, group_dim_y, 1);
+	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+	// Store surface information (color, normal, etc.) into the octree leaf nodes
+	leaf_store_sh.use();
+	glUniform1i(leaf_store_sh.get_uniform_location("u_numVoxelFrag"), num_voxel_fragments);
+	glUniform1i(leaf_store_sh.get_uniform_location("u_octreeLevel"), num_octree_levels);
+	glUniform1i(leaf_store_sh.get_uniform_location("u_voxelDim"), voxel_grid_width);
+	glBindImageTexture(0, octree_node_tex[0], 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+	glBindImageTexture(1, octree_node_tex[1], 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32UI);
+	glBindImageTexture(2, voxel_pos_tex, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGB10_A2UI);
+	glBindImageTexture(3, voxel_col_tex, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
+	glDispatchCompute(group_dim_x, group_dim_y, 1);
+	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+	glDeleteBuffers(1, &tile_alloc_counter);
+	tile_alloc_counter = 0;
+
+}
+
+void render_svo(GLFWwindow *window)
+{
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
+	gls::Shader render_svo_sh("../../Applications-source/model_loader/shaders/render_svo.vert", "../../Applications-source/model_loader/shaders/render_svo.frag", "../../Applications-source/model_loader/shaders/render_svo.geom");
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+	glBindVertexArray(0);
+
+	cgs::Camera camera;
+	camera.scale_film_gate(voxel_grid_width, voxel_grid_height);
+	camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, 3.0f));
+	cgm::mat4   model_view = cgm::invert_orthogonal(camera.get_transform().object_to_world());
+
+	render_svo_sh.use();
+	GLint mode_view_loc = render_svo_sh.get_uniform_location("u_ModelView");
+	GLint proj_loc = render_svo_sh.get_uniform_location("u_Proj");
+
+	glUniformMatrix4fv(mode_view_loc, 1, GL_FALSE, model_view.value_ptr());
+	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
+	glUniform1i(render_svo_sh.get_uniform_location("u_voxelDim"), voxel_grid_width);
+	float halfDim = 1.0f / (float)voxel_grid_width;
+	std::cout << "half dim is: " << halfDim << std::endl;
+	glUniform1f(render_svo_sh.get_uniform_location("u_halfDim"), halfDim);
+	glUniform1i(render_svo_sh.get_uniform_location("u_octreeLevel"), num_octree_levels);
+
+	glBindImageTexture(0, octree_node_tex[0], 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+	glBindImageTexture(1, octree_node_tex[1], 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+
+	int curr_width, curr_height;
+	glBindVertexArray(vao);
+	while (!glfwWindowShouldClose(window)) {
+		GLfloat current_frame = glfwGetTime();
+		delta_time = current_frame - last_frame;
+		last_frame = current_frame;
+		
+		cgs::Euler euler(heading, pitch, bank);
+		cgm::mat4 cam_orientation = euler.get_rotation_mat4();
+		camera.get_transform().set_object_to_upright(cam_orientation);
+
+		cgm::vec3 right = cam_orientation.p();
+		cgm::vec3 up = cam_orientation.q();
+		cgm::vec3 forward = cam_orientation.r();
+
+		cgm::vec3 pos = do_movement(camera.get_transform().get_position(), right, up, forward);
+
+		camera.get_transform().set_position(pos);
+		model_view = cgm::invert_orthogonal(camera.get_transform().object_to_world());
+
+		float device_aspect_ratio;
+		glfwGetFramebufferSize(window, &curr_width, &curr_height);
+		glViewport(0, 0, curr_width, curr_height);
+
+		if ((camera.get_image_width() != curr_width) || (camera.get_image_height() != curr_height)) {
+			camera.scale_film_gate(curr_width, curr_height);
+			glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
+		}
+
+		glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
+		glUniformMatrix4fv(mode_view_loc, 1, GL_FALSE, model_view.value_ptr());
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		render_svo_sh.use();
+		glDrawArrays(GL_POINTS, 0, voxel_grid_width * voxel_grid_width * voxel_grid_width);
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+	glBindVertexArray(0);
+	glfwDestroyWindow(window);
+	glfwTerminate();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void voxelizeScene(int bStore, GLFWwindow *window, gls::Model & model, gls::Shader & voxelize_shader)
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, voxel_grid_width, voxel_grid_height);
+
+	
+
+	//Disable some fixed-function opeartions
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+	//////////////////////////////////////////////////////////////////////
+	cgm::vec3 b_box_max = model.bounding_box_max();
+	cgm::vec3 b_box_min = model.bounding_box_min();
+	cgm::vec3 scale_max = cgm::vec3(1.0f / b_box_max.x, 1.0f / b_box_max.y, 1.0f / b_box_max.z);
+
+
+	float t_x = 0.0f;
+	float t_y = 0.0f;
+	float t_z = 0.0f;
+
+	if (b_box_max.x > std::fabs(b_box_min.x)) {
+		t_x = -((b_box_max.x + std::fabs(b_box_min.x)) / 2.0f + b_box_min.x);
+	}
+	else {
+		t_x = (b_box_max.x + std::fabs(b_box_min.x)) / 2.0f - b_box_max.x;
+	}
+	if (b_box_max.y > std::fabs(b_box_min.y)) {
+		t_y = -((b_box_max.y + std::fabs(b_box_min.y)) / 2.0f + b_box_min.y);
+	}
+	else {
+		t_y = (b_box_max.y + std::fabs(b_box_min.y)) / 2.0f - b_box_max.y;
+	}
+	if (b_box_max.z > std::fabs(b_box_min.z)) {
+		t_z = -((b_box_max.z + std::fabs(b_box_min.z)) / 2.0f + b_box_min.z);
+	}
+	else {
+		t_z = (b_box_max.z + std::fabs(b_box_min.z)) / 2.0f - b_box_max.z;
+	}
+
+	float s = scale_max.x;
+
+	if ((scale_max.x < scale_max.y) && (scale_max.x < scale_max.z)) {
+		s = scale_max.x;
+		//		std::cout << "min scale is x = " << s << std::endl;
+	}
+	else if ((scale_max.y < scale_max.x) && (scale_max.y < scale_max.z)) {
+		s = scale_max.y;
+		//	std::cout << "min scale is y = " << s << std::endl;
+	}
+	else {
+		s = scale_max.z;
+		//		std::cout << "min scale is z = " << s << std::endl;
+	}
+
+
+	cgm::mat4 ortho = cgm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 2.0f - 1.0f, 3.0f);
+
+	cgs::Transform obj_transf;
+	obj_transf.set_object_to_upright(cgm::concat_mat4(cgm::scale(s, s, s), cgm::rotate(cgm::vec3(1.0f, 0.0f, 0.0f), 0.0f)));
+	obj_transf.set_position(cgm::vec3(t_x * scale_max.x, t_y * scale_max.y, t_z * scale_max.z));
+	
+	//obj_transf.set_object_to_upright(cgm::concat_mat4(cgm::scale(0.199f, 0.199f, 0.199f), cgm::rotate(cgm::vec3(1.0f, 0.0f, 0.0f), 0.0f)));
+	//obj_transf.set_position(cgm::vec3(0.0f, 0.0f, 0.0f));
+
+
+	cgs::Camera camera;
+	camera.set_mode(cgs::Camera::ORTHOGRAPHIC);
+	camera.scale_film_gate(voxel_grid_width, voxel_grid_height);
+
+
+	/// ORTHOGONAL PROJECTION ALONG THE X AXIS ///////////////////
+	camera.get_transform().set_object_to_upright(cgm::rotate(cgm::vec3(0.0f, 1.0f, 0.0f), 90.0f));
+	camera.get_transform().set_position(cgm::vec3(2.0f, 0.0f, 0.0f));
+
+	cgm::mat4 mvp_x = cgm::concat_mat4(obj_transf.object_to_world(), cgm::invert_orthogonal(camera.get_transform().object_to_world()));
+	mvp_x.concat_assign(ortho);
+	GLint mvp_x_loc = voxelize_shader.get_uniform_location("u_mvp_x");
+	glUniformMatrix4fv(mvp_x_loc, 1, GL_FALSE, mvp_x.value_ptr());
+
+	/// -------------------------------------/////////////////////
+
+	/// ORTHOGONAL PROJECTION ALONG THE Y AXIS //////
+	camera.get_transform().set_object_to_upright(cgm::rotate(cgm::vec3(1.0f, 0.0f, 0.0f), -90.0f));
+	camera.get_transform().set_position(cgm::vec3(0.0f, 2.0f, 0.0f));
+
+	cgm::mat4 mvp_y = cgm::concat_mat4(obj_transf.object_to_world(), cgm::invert_orthogonal(camera.get_transform().object_to_world()));
+	mvp_y.concat_assign(ortho);
+	GLint mvp_y_loc = voxelize_shader.get_uniform_location("u_mvp_y");
+	glUniformMatrix4fv(mvp_y_loc, 1, GL_FALSE, mvp_y.value_ptr());
+	//-----------------------------------------/////
+
+	// ORTHOGONAL PROJECTION ALONG THE Z AXIS //
+
+	camera.get_transform().set_object_to_upright(cgm::mat4());
+	camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, 2.0f));
+
+	cgm::mat4 mvp_z = cgm::concat_mat4(obj_transf.object_to_world(), cgm::invert_orthogonal(camera.get_transform().object_to_world()));
+	mvp_z.concat_assign(ortho);
+	GLint mvp_z_loc = voxelize_shader.get_uniform_location("u_mvp_z");
+	glUniformMatrix4fv(mvp_z_loc, 1, GL_FALSE, mvp_z.value_ptr());
+	// --------------------------------------//
+
+	glUniform1i(voxelize_shader.get_uniform_location("u_voxel_grid_width"), voxel_grid_width);
+	glUniform1i(voxelize_shader.get_uniform_location("u_voxel_grid_height"), voxel_grid_height);
+	glUniform1i(voxelize_shader.get_uniform_location("u_bStore"), bStore);
+	
+	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, atomic_counter);
+	//Bind image in image location 0
+
+	if (bStore == 1) {
+		glBindImageTexture(0, voxel_pos_tex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGB10_A2UI);
+		glBindImageTexture(1, voxel_col_tex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);
+	}
+
+	//while (!glfwWindowShouldClose(window)) {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	voxelize_shader.use();
+	model.render(voxelize_shader);
+
+	glfwSwapBuffers(window);
+	glfwPollEvents();
+	//}
+
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+}
+
+
+void build_voxel_fragment_list(GLFWwindow *window, gls::Model & model, gls::Shader & shader)
+{
+	GLenum err;
+
+	//Create atomic counter buffer
+	atomic_counter = gen_atomic_buff();
+	voxelizeScene(0, window, model, shader);
+	glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
+
+	err = glGetError();
+	//Obtain number of voxel fragments
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter);
+	GLuint* count = (GLuint*)glMapBufferRange(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+	err = glGetError();
+
+	num_voxel_fragments = count[0];
+	std::cout << "Number of Entries in Voxel Fragment List: " << num_voxel_fragments << std::endl;
+	//Create buffers for voxel fragment list
+	gen_linear_buff(sizeof(GLuint) * num_voxel_fragments, GL_R32UI, &voxel_pos_tex, &voxel_pos_tex_buff);
+	gen_linear_buff(sizeof(GLuint) * num_voxel_fragments, GL_RGBA8, &voxel_col_tex, &voxel_col_tex_buff);
+	//genLinearBuffer( sizeof(GLuint) * numVoxelFrag, GL_RGBA16F, &voxelNrmlTex, &voxelNrmlTbo ); 
+
+	//reset counter
+	memset(count, 0, sizeof(GLuint));
+
+	glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
+
+	//Voxelize the scene again, this time store the data in the voxel fragment list
+	voxelizeScene(1, window, model, shader);
+	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+}
+
 int main(int argc, char *argv[]) 
 {
 	glfwSetErrorCallback(error_callback);
@@ -1096,7 +1487,7 @@ int main(int argc, char *argv[])
 	glewExperimental = GL_TRUE;
 	glewInit();
 
-	std::string path = "../../Resources/Dragon/dragon2.obj";
+	std::string path = "../../Resources/Cow/cow.obj";
 	std::string mode = "svo";
 	if (argc > 1) {
 	    path = argv[1];
@@ -1115,7 +1506,8 @@ int main(int argc, char *argv[])
 	//gls::Shader shader("../../Applications-source/model_loader/shaders/vertex.vert", "../../Applications-source/model_loader/shaders/fragment2.frag");
 	gls::Shader shader("C:/Users/mateu/Documents/Projects/Applications/model_loader/source/shaders/vertex2.vert", "C:/Users/mateu/Documents/Projects/Applications/model_loader/source/shaders/fragment2.frag");
 	
-	gls::Shader voxelize_shader("../../Applications-source/model_loader/shaders/voxelization.vert", "../../Applications-source/model_loader/shaders/voxelization.frag", "../../Applications-source/model_loader/shaders/voxelization.geom");
+	//gls::Shader voxelize_shader("../../Applications-source/model_loader/shaders/voxelization.vert", "../../Applications-source/model_loader/shaders/voxelization.frag", "../../Applications-source/model_loader/shaders/voxelization.geom");
+	gls::Shader voxelize_shader("../../Applications-source/model_loader/shaders/voxelize.vert", "../../Applications-source/model_loader/shaders/voxelize.frag", "../../Applications-source/model_loader/shaders/voxelize.geom");
 	voxelize_shader.use();
 	gls::Model model(path);
 
@@ -1126,34 +1518,46 @@ int main(int argc, char *argv[])
 	}
 	else if (mode == "svo") {
 		
+		build_voxel_fragment_list(window, model, voxelize_shader);
+		build_svo();
+		
+		glDeleteTextures(1, &voxel_pos_tex);
+		voxel_pos_tex = 0;
+		glDeleteBuffers(1, &voxel_pos_tex_buff);
+		voxel_pos_tex_buff = 0;
+		
+		render_svo(window);
+		return 0;
+
 		//generate the voxel fragment list
 		atomic_counter = gen_atomic_buff();
-		 voxelize_scene_test(model, voxelize_shader, 0, 2, 1, window);
-		 glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
-		 glCheckError();
+		voxelize_scene_test(model, voxelize_shader, 0, 2, 1, window);
+		glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
+		glCheckError();
 
-		 glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter);
-		 GLuint* count = (GLuint*)glMapBufferRange(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
-		 glCheckError();
+		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter);
+		GLuint* count = (GLuint*)glMapBufferRange(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+		glCheckError();
 
-		 num_voxel_fragments = count[0];
-		 std::cout << "Number of Entries in Voxel Fragment List: " << num_voxel_fragments << std::endl;
+		num_voxel_fragments = count[0];
+		std::cout << "Number of Entries in Voxel Fragment List: " << num_voxel_fragments << std::endl;
 
-		 //create the arrays/buffers for the voxel fragment list
-		 gen_linear_buff(sizeof(GLuint) * num_voxel_fragments, GL_R32UI, &voxel_pos_tex, &voxel_pos_tex_buff);
-		 gen_linear_buff(sizeof(GLuint) * num_voxel_fragments, GL_RGBA8, &voxel_col_tex, &voxel_col_tex_buff);
+		//create the arrays/buffers for the voxel fragment list
+		gen_linear_buff(sizeof(GLuint) * num_voxel_fragments, GL_R32UI, &voxel_pos_tex, &voxel_pos_tex_buff);
+		gen_linear_buff(sizeof(GLuint) * num_voxel_fragments, GL_RGBA8, &voxel_col_tex, &voxel_col_tex_buff);
 
-		 //reset atomic counter
-		 memset(count, 0, sizeof(GLuint));
+		//reset atomic counter
+		memset(count, 0, sizeof(GLuint));
 
-		 glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
-		 glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
+		glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
+		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
 
-		 voxelize_scene_test(model, voxelize_shader, 0, 2, 2, window);
-		 glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+		voxelize_scene_test(model, voxelize_shader, 0, 2, 2, window);
+		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
 		 //octree subdivision
-
+		build_svo();
+		render_svo(window);
 	}
 
 	//shader.use();

@@ -1,0 +1,31 @@
+#version 430
+layout (local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+uniform  int  u_start;        // index of the first node in the last level of the octree
+uniform  int  u_alloc_start;  // index of the first free position in the node pool
+uniform  int  u_num;          // number of nodes in the last level of the octree
+
+uniform layout(binding = 0, r32ui) uimageBuffer u_octree_buf;
+
+layout  (binding = 0, offset = 0) uniform atomic_uint u_tile_alloc_count;
+
+void main()
+{
+	uint  offset;
+	
+	uint  thx_id = gl_GlobalInvocationID.x;
+	if (thx_id >= u_num){
+		return;
+	}
+
+	// child pointer of the node in the last level of the octree associated with this thread
+	uint child_id  =  imageLoad( u_octree_buf, u_start + int(thx_id)).r;
+
+	if( (child_id & 0x80000000 ) != 0 ) { // check if the node is flaged for subdivision
+		offset   =  atomicCounterIncrement(u_tile_alloc_count);
+		offset  *=  8;
+		offset  +=  u_alloc_start;
+		offset |= 0x80000000;    //Set the most significant bit
+		imageStore( u_octree_buf, u_start + int(thx_id), uvec4(offset,0,0,0) );
+	}
+}
