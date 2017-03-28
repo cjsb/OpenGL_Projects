@@ -10,6 +10,8 @@ in  vec2  f_uv;
 layout (location = 0) out vec4 gl_FragColor;
 layout (pixel_center_integer) in vec4 gl_FragCoord;
 
+layout(RGBA8) uniform image3D u_voxelImage;
+
 //atomic counter
 layout ( binding = 0, offset = 0 ) uniform atomic_uint u_voxelFragCount;
 
@@ -20,7 +22,8 @@ uniform layout(binding = 1, rgba8 ) imageBuffer u_voxelKd;
 
 uniform  int   u_voxel_grid_width;
 uniform  int   u_voxel_grid_height;
-uniform  int u_bStore;
+uniform  int   u_bStore;
+uniform  int   u_mode;
 
 void main()
 {
@@ -45,12 +48,18 @@ void main()
 	}
 	else
 	    texcoord = temp;
-
-	uint idx = atomicCounterIncrement( u_voxelFragCount );
-	if( u_bStore == 1 ) {
-	   imageStore( u_voxelPos, int(idx), texcoord );
-	   imageStore( u_voxelKd, int(idx), vec4( 1.0f, 1.0f, 0.0f, 1.0f ) );
+	
+	if (u_mode == 0) { // store in texture
+		imageStore( u_voxelImage, ivec3(texcoord), vec4(0.5f, 0.5f, 0.5f, 1.0f) );
 	}
+	else if (u_mode == 1){
+		uint idx = atomicCounterIncrement( u_voxelFragCount );
+		if( u_bStore == 1 ) {
+			imageStore( u_voxelPos, int(idx), texcoord );
+			imageStore( u_voxelKd, int(idx), vec4( 1.0f, 1.0f, 0.0f, 1.0f ) );
+		}
+	}
+	
 
 	//imageStore( u_voxelImage, texcoord, data );
 	//gl_FragColor = vec4( 1, 1, 1, 1 );

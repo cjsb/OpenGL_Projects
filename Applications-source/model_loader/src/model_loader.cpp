@@ -36,7 +36,7 @@ double prev_y_pos = 0.0f;
 double mouse_sensitivity = 0.2;
 float  heading, pitch, bank;
 
-float  cam_speed = 2.0f;
+float  cam_speed = 1.2f;
 
 /// voxealization data
 int		voxel_grid_width  = 256;
@@ -1288,7 +1288,7 @@ void render_svo(GLFWwindow *window)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void voxelizeScene(int bStore, GLFWwindow *window, gls::Model & model, gls::Shader & voxelize_shader)
+void voxelizeScene(int bStore, GLFWwindow *window, gls::Model & model, gls::Shader & voxelize_shader, const std::string & mode, const GLuint & tex_id)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glViewport(0, 0, voxel_grid_width, voxel_grid_height);
@@ -1403,6 +1403,16 @@ void voxelizeScene(int bStore, GLFWwindow *window, gls::Model & model, gls::Shad
 		glBindImageTexture(0, voxel_pos_tex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGB10_A2UI);
 		glBindImageTexture(1, voxel_col_tex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);
 	}
+	//0: storing voxels in texture
+	//1: storing in fragment list
+	if (mode == "texture") {
+		glBindTexture(GL_TEXTURE_3D, tex_id);
+		glBindImageTexture(0, tex_id, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
+		glUniform1i(voxelize_shader.get_uniform_location("u_mode"), 0);
+	}
+	else if (mode == "svo") {
+		glUniform1i(voxelize_shader.get_uniform_location("u_mode"), 1);
+	}
 
 	//while (!glfwWindowShouldClose(window)) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1427,7 +1437,7 @@ void build_voxel_fragment_list(GLFWwindow *window, gls::Model & model, gls::Shad
 
 	//Create atomic counter buffer
 	atomic_counter = gen_atomic_buff();
-	voxelizeScene(0, window, model, shader);
+	voxelizeScene(0, window, model, shader, "svo", 0);
 	glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
 
 	err = glGetError();
@@ -1450,7 +1460,7 @@ void build_voxel_fragment_list(GLFWwindow *window, gls::Model & model, gls::Shad
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
 
 	//Voxelize the scene again, this time store the data in the voxel fragment list
-	voxelizeScene(1, window, model, shader);
+	voxelizeScene(1, window, model, shader, "svo", 0);
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
 }
@@ -1468,7 +1478,18 @@ int main(int argc, char *argv[])
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-	GLFWwindow *window = glfwCreateWindow(voxel_grid_width, voxel_grid_height, "Model Loader", NULL, NULL);
+	std::string title;
+	if (voxel_grid_width == 128) {
+		title = "voxelization 128x128x128";
+	}
+	else if (voxel_grid_width == 256) {
+		title = "voxelization 256x256x256";
+	}
+	else if (voxel_grid_width == 512) {
+		title = "voxelization 512x512x512";
+	}
+
+	GLFWwindow *window = glfwCreateWindow(voxel_grid_width, voxel_grid_height, title.c_str(), NULL, NULL);
 
 	if (!window) {
 		glfwTerminate();
@@ -1513,7 +1534,8 @@ int main(int argc, char *argv[])
 
 	if (mode == "texture") {
 		GLuint tex_3d_id = gen_3d_texture(voxel_grid_width);
-		voxelize_scene_test(model, voxelize_shader, tex_3d_id, 1, 0, window);
+		voxelizeScene(0, window, model, voxelize_shader, "texture", tex_3d_id);
+		//voxelize_scene_test(model, voxelize_shader, tex_3d_id, 1, 0, window);
 		render_voxels_test(tex_3d_id, window);
 	}
 	else if (mode == "svo") {
