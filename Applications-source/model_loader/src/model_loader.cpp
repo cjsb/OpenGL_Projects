@@ -39,8 +39,8 @@ float  heading, pitch, bank;
 float  cam_speed = 1.2f;
 
 /// voxealization data
-int		voxel_grid_width  = 256;
-int	    voxel_grid_height = 256; 
+int		voxel_grid_width  = 512;
+int	    voxel_grid_height = 512; 
 GLuint  num_voxel_fragments = 0;
 
 // voxel fragment list buffers
@@ -345,14 +345,12 @@ unsigned int gen_3d_texture(int dim)
 	return tex_id;
 }
 
-GLuint gen_framebuffer(const GLuint text_id, const GLuint text_width, const GLuint tex_height) 
+void gen_framebuffer(GLuint & framebuffer , GLuint & depth_buffer, const GLuint text_id, const GLuint text_width, const GLuint tex_height)
 {
-	GLuint depth_buffer;
 	glGenRenderbuffers(1, &depth_buffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, text_width, tex_height);
 
-	GLuint framebuffer;
 	glGenFramebuffers(1, &framebuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, text_id, 0);
@@ -361,12 +359,11 @@ GLuint gen_framebuffer(const GLuint text_id, const GLuint text_width, const GLui
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 		std::cerr << "ERROR: Could not generate framebuffer object" << std::endl;
 	}
-		
 
-	return framebuffer;
 }
 
-void fface_bface_renderer(GLFWwindow * window, const gls::Mesh & volume ,GLuint & bf_texture, GLuint & ff_texture, const gls::Shader & backface_shader, const gls::Shader & frontface_shader  ,cgs::Camera & camera ) 
+void fface_bface_renderer(GLFWwindow * window, const gls::Mesh & volume, GLuint & bf_framebuffer, GLuint & bf_renderbuffer ,GLuint & bf_texture,
+	               GLuint & ff_framebuffer, GLuint & ff_renderbuffer, GLuint & ff_texture, const gls::Shader & backface_shader, const gls::Shader & frontface_shader  ,cgs::Camera & camera ) 
 {
 	
 	glViewport(0, 0, voxel_grid_width, voxel_grid_height);
@@ -374,9 +371,9 @@ void fface_bface_renderer(GLFWwindow * window, const gls::Mesh & volume ,GLuint 
 	// Start 01 Step, render the back faces of the volume boulding box to a framebuffer //
 
 	
-
+	//GLuint bf_framebuffer, bf_renderbuffer;
 	// generate the framebuffer and assign the 2d texture to it
-	GLuint bf_framebuffer = gen_framebuffer(bf_texture, voxel_grid_width, voxel_grid_height);
+	// gen_framebuffer(bf_framebuffer, bf_renderbuffer ,bf_texture, voxel_grid_width, voxel_grid_height);
 
 	//gls::Mesh volume = setup_volume_bbox();
 
@@ -422,9 +419,9 @@ void fface_bface_renderer(GLFWwindow * window, const gls::Mesh & volume ,GLuint 
 	///--------------------------------END 01--------------------------------------------- //
 
 	//  STEP 02 -  Render the front faces to texture////////////////////////////////////////////////
+	//GLuint ff_framebuffer, ff_renderbuffer;
 
-
-	GLuint ff_framebuffer = gen_framebuffer(ff_texture, voxel_grid_width, voxel_grid_height);
+	//gen_framebuffer(ff_framebuffer, ff_renderbuffer, ff_texture, voxel_grid_width, voxel_grid_height);
 
 	//gls::Shader ff_shader("../../Applications-source/model_loader/shaders/frontface.vert", "../../Applications-source/model_loader/shaders/frontface.frag");
 	frontface_shader.use();
@@ -453,14 +450,9 @@ void fface_bface_renderer(GLFWwindow * window, const gls::Mesh & volume ,GLuint 
 	//}
 	glDisable(GL_CULL_FACE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	// delete the framebuffers
-	glDeleteFramebuffers(1, &bf_framebuffer);
-	glDeleteFramebuffers(1, &ff_framebuffer);
-
 }
 
-void render_voxels_test(const GLuint & tex_3d, GLFWwindow * window)
+void render_tex3d_voxels(const GLuint & tex_3d, GLFWwindow * window)
 {
 	cgs::Camera camera;
 	camera.scale_film_gate(voxel_grid_width, voxel_grid_height);
@@ -471,12 +463,18 @@ void render_voxels_test(const GLuint & tex_3d, GLFWwindow * window)
 	bf_texture = gen_2d_texture(voxel_grid_width, voxel_grid_height);
 	ff_texture = gen_2d_texture(voxel_grid_width, voxel_grid_height);
 
+	GLuint bf_framebuffer, bf_renderbuffer;
+	gen_framebuffer(bf_framebuffer, bf_renderbuffer, bf_texture, voxel_grid_width, voxel_grid_height);
+
+	GLuint ff_framebuffer, ff_renderbuffer;
+	gen_framebuffer(ff_framebuffer, ff_renderbuffer, ff_texture, voxel_grid_width, voxel_grid_height);
+
 	gls::Shader backface_shader("../../Applications-source/model_loader/shaders/backface.vert", "../../Applications-source/model_loader/shaders/backface.frag");
 	gls::Shader frontface_shader("../../Applications-source/model_loader/shaders/frontface.vert", "../../Applications-source/model_loader/shaders/frontface.frag");
 
 	gls::Mesh volume = setup_volume_bbox();
 	// maybe pass a model matrix for the cube position
-	fface_bface_renderer(window, volume, bf_texture, ff_texture, backface_shader, frontface_shader, camera);
+	fface_bface_renderer(window, volume, bf_framebuffer, bf_renderbuffer , bf_texture, ff_framebuffer, ff_renderbuffer, ff_texture, backface_shader, frontface_shader, camera);
 
 	//------------------- Step 03 - Ray marching----------------------------------------------------//
 
@@ -553,7 +551,7 @@ void render_voxels_test(const GLuint & tex_3d, GLFWwindow * window)
 
 	
 
-		fface_bface_renderer(window, volume, bf_texture, ff_texture, backface_shader, frontface_shader, camera);
+		fface_bface_renderer(window, volume, bf_framebuffer, bf_renderbuffer, bf_texture, ff_framebuffer, ff_renderbuffer, ff_texture, backface_shader, frontface_shader, camera);
 
 		ray_marching_sh.use();
 
@@ -588,314 +586,22 @@ void render_voxels_test(const GLuint & tex_3d, GLFWwindow * window)
 		glfwPollEvents();
 
 	}
-}
 
-void voxelize_scene_test(const gls::Model & m, const gls::Shader & vs, const GLuint & tex_id, const int mode , const unsigned pass_number, GLFWwindow *window)
-{
-	glViewport(0, 0, voxel_grid_width, voxel_grid_height);
+	// delete the renderbuffers and framebuffers
+	glDeleteRenderbuffers(1, &bf_renderbuffer);
+	glDeleteRenderbuffers(1, &ff_renderbuffer);
 
-	//Disable some fixed-function opeartions
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-	//////////////////////////////////////////////////////////////////////
-	cgm::vec3 b_box_max = m.bounding_box_max();
-	cgm::vec3 b_box_min = m.bounding_box_min();
-	cgm::vec3 scale_max = cgm::vec3(1.0f / b_box_max.x, 1.0f / b_box_max.y, 1.0f / b_box_max.z);
-
-	
-	float t_x = 0.0f;
-	float t_y = 0.0f;
-	float t_z = 0.0f;
-	
-	if (b_box_max.x > std::fabs(b_box_min.x)) {
-		t_x = -((b_box_max.x + std::fabs(b_box_min.x) ) / 2.0f + b_box_min.x);
-	}
-	else {
-		t_x = (b_box_max.x + std::fabs(b_box_min.x) ) / 2.0f - b_box_max.x;
-	}
-	if (b_box_max.y > std::fabs(b_box_min.y)) {
-		t_y = -((b_box_max.y + std::fabs(b_box_min.y)) / 2.0f + b_box_min.y);
-	}
-	else {
-		t_y = (b_box_max.y + std::fabs(b_box_min.y)) / 2.0f - b_box_max.y;
-	}
-	if (b_box_max.z > std::fabs(b_box_min.z)) {
-		t_z = -((b_box_max.z + std::fabs(b_box_min.z)) / 2.0f + b_box_min.z);
-	}
-	else {
-		t_z = (b_box_max.z + std::fabs(b_box_min.z)) / 2.0f - b_box_max.z;
-	}
-	
-	float s = scale_max.x;
-
-	if ((scale_max.x < scale_max.y) && (scale_max.x < scale_max.z)) {
-		s = scale_max.x;
-//		std::cout << "min scale is x = " << s << std::endl;
-	}
-	else if ((scale_max.y < scale_max.x) && (scale_max.y < scale_max.z)) {
-		s = scale_max.y;
-	//	std::cout << "min scale is y = " << s << std::endl;
-	}
-	else {
-		s = scale_max.z;
-//		std::cout << "min scale is z = " << s << std::endl;
-	}
-
-
-	cgs::Camera camera;
-	camera.set_mode(cgs::Camera::ORTHOGRAPHIC);
-	camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, 2.0f));
-
-	cgm::mat4 ortho = cgm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 3.0f);
-
-	cgs::Transform obj_transf;
-	obj_transf.set_object_to_upright(cgm::concat_mat4(cgm::scale(s, s, s), cgm::rotate(cgm::vec3(1.0f, 0.0f, 0.0f), 0.0f)));
-	obj_transf.set_position(cgm::vec3(t_x * scale_max.x, t_y * scale_max.y , t_z * scale_max.z));
-
-
-	GLint m_loc = vs.get_uniform_location("M");
-	glCheckError();
-	GLint v_loc = vs.get_uniform_location("V");
-	glCheckError();
-	GLint p_loc = vs.get_uniform_location("P");
-	GLint scene_scale_loc = vs.get_uniform_location("sceneScale");
-	GLint pass_no_loc	  = vs.get_uniform_location("u_pass_no");
-	GLint mode_loc = vs.get_uniform_location("u_mode");
-
-	glUniformMatrix4fv(m_loc, 1, GL_FALSE, obj_transf.object_to_world().value_ptr());
-	glUniformMatrix4fv(v_loc, 1, GL_FALSE, cgm::invert_orthogonal(camera.get_transform().object_to_world()).value_ptr());
-	glUniformMatrix4fv(p_loc, 1, GL_FALSE, ortho.value_ptr());
-	glUniform1f(scene_scale_loc, 1.0f);
-	glUniform1i(mode_loc, mode);
-	
-	if (mode == 1) { // 3D texture for storage
-		glBindTexture(GL_TEXTURE_3D, tex_id);
-		glBindImageTexture(0, tex_id, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
-	}
-	else if (mode == 2) { // sparse voxel octree for storage
-		glUniform1i(pass_no_loc, pass_number);
-
-		glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, atomic_counter);
-
-		if (pass_number == 2) {
-			std::cout << "In pass 2" << std::endl;
-			glBindImageTexture(0, voxel_pos_tex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGB10_A2UI);
-			glBindImageTexture(0, voxel_col_tex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);
-			glCheckError();
-		}
-		else {
-			std::cout << "In pass 1" << std::endl;
-		}
-	}
-	
-	//while (!glfwWindowShouldClose(window)) {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	vs.use();
-	m.render(vs);
-
-	glfwSwapBuffers(window);
-	glfwPollEvents();
-//	}
-	glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);
-
-	//glGenerateMipmap(GL_TEXTURE_3D);
-
-	glBindTexture(GL_TEXTURE_3D, 0);
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-
-	
-	glDeleteProgram(vs.get_program());
-	glCheckError();
-	//render_voxels_test(tex_id, window);
-	//voxels_slice_visualization(tex_id, window);
-}
-
-
-void render_voxels( const GLuint & tex_3d , GLFWwindow * window) 
-{
-	
-	glViewport(0, 0, voxel_grid_width, voxel_grid_height);
-
-	// Start 01 Step, render the back faces of the volume boulding box to a framebuffer //
-	
-	//generate the framebuffer's texture
-	GLuint bf_texture   =  gen_2d_texture(voxel_grid_width, voxel_grid_height);
-	glCheckError();
-
-	// generate the framebuffer and assign the 2d texture to it
-	GLuint bf_framebuffer  =  gen_framebuffer(bf_texture, voxel_grid_width, voxel_grid_height);
-	glCheckError();
-	gls::Mesh volume =  setup_volume_bbox();
-	
-	gls::Shader backface_shader("../../Applications-source/model_loader/shaders/backface.vert", "../../Applications-source/model_loader/shaders/backface.frag");
-	backface_shader.use();
-	glCheckError();
-	//create the 2d texture
-	cgs::Camera camera;
-	camera.scale_film_gate(voxel_grid_width, voxel_grid_height);
-	camera.get_transform().set_object_to_upright(cgm::mat4());
-	camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, 3.0f));
-
-	cgm::mat4 model = cgm::translate(cgm::vec3(-0.5f, -0.5f, -0.5f));
-	model.concat_assign(cgm::rotate(cgm::vec3(0.0f, 1.0f, 0.0f), -35.0f));
-	model.concat_assign(cgm::rotate(cgm::vec3(1.0f, 0.0f, 0.0f), 25.0f));
-	GLint model_loc = backface_shader.get_uniform_location("model");
-	GLint  view_loc = backface_shader.get_uniform_location("view");
-	GLint  proj_loc = backface_shader.get_uniform_location("projection");
-
-	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.value_ptr());
-	glUniformMatrix4fv(view_loc, 1, GL_FALSE, (cgm::invert_orthogonal(camera.get_transform().object_to_world())).value_ptr());
-	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
-
-	//here you bind the framebuffer
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, bf_framebuffer);
-	glCheckError();
-	
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
-	
-	//while (!glfwWindowShouldClose(window)) {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		backface_shader.use();
-		volume.render(backface_shader);
-
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	//}
-	glCheckError();
-	glDisable(GL_CULL_FACE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDeleteFramebuffers(1, &bf_framebuffer);
-	glCheckError();
-	glDeleteProgram(backface_shader.get_program());
-	glCheckError();
-	///--------------------------------END 01--------------------------------------------- //
-	
-	//  STEP 02 -  Render the front faces to texture////////////////////////////////////////////////
-
-	GLuint ff_texture = gen_2d_texture(voxel_grid_width, voxel_grid_height);
-	glCheckError();
-	
-	GLuint ff_framebuffer = gen_framebuffer(ff_texture, voxel_grid_width, voxel_grid_height);
-	glCheckError();
-	
-	gls::Shader ff_shader("../../Applications-source/model_loader/shaders/frontface.vert", "../../Applications-source/model_loader/shaders/frontface.frag");
-	ff_shader.use();
-	glCheckError();
-
-	model_loc  =  ff_shader.get_uniform_location("model");
-	view_loc   =  ff_shader.get_uniform_location("view");
-	proj_loc   =  ff_shader.get_uniform_location("projection");
-
-	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.value_ptr());
-	glUniformMatrix4fv(view_loc, 1, GL_FALSE, (cgm::invert_orthogonal(camera.get_transform().object_to_world())).value_ptr());
-	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
-
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ff_framebuffer);
-	glCheckError();
-
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-
-	//while (!glfwWindowShouldClose(window)) {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	ff_shader.use();
-	volume.render(ff_shader);
-
-	glfwSwapBuffers(window);
-	glfwPollEvents();
-	//}
-	glCheckError();
-	glDisable(GL_CULL_FACE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 	glDeleteFramebuffers(1, &ff_framebuffer);
-	glCheckError();
-	glDeleteProgram(ff_shader.get_program());
-	glCheckError();
-	///////////////////////////////////////////////////////////////////////////////////////////////////
 
-	//------------------- Step 03 - Ray marching----------------------------------------------------//
-
-	gls::Shader ray_marching_sh("../../Applications-source/model_loader/shaders/ray_marching.vert", "../../Applications-source/model_loader/shaders/ray_marching.frag");
-	ray_marching_sh.use();
-	glCheckError();
-
-	////////////////////////////////////DRAW A PLANE IN FRONT OF THE CAMERA/////////////////////////////////////////////////////////////
-	gls::Mesh near_clipping_plane = plane_mesh();
-
-	//orient the plane to match the camera's near clipping plane
-	float left, right, bottom, top, near, far;
-	camera.get_bnd(left, right, bottom, top, near, far);
-
-
-	model = cgm::scale(right * 2.0f, top * 2.0f, 1.0f);
-	model.concat_assign(cgm::translate(cgm::vec3(0.0f, 0.0f, -near - 0.0001f)));
-	model.concat_assign(camera.get_transform().object_to_upright());
-	model.concat_assign(cgm::translate(camera.get_transform().get_position()));
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	model_loc = ray_marching_sh.get_uniform_location("model");
-	view_loc = ray_marching_sh.get_uniform_location("view");
-	proj_loc = ray_marching_sh.get_uniform_location("projection");
-
-	GLint backface_loc   =  ray_marching_sh.get_uniform_location("exit_points");
-	GLint frontface_loc   = ray_marching_sh.get_uniform_location("entry_points");
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, bf_texture);
-	glUniform1i(backface_loc, 1);
-	glCheckError();
-
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, ff_texture);
-	glUniform1i(frontface_loc, 2);
-	glCheckError();
-	/*
-	GLint volume_loc = ray_marching_sh.get_uniform_location("voxel_image");
-	glActiveTexture(GL_TEXTURE3);
-	 glBindTexture(GL_TEXTURE_3D, tex_3d);
-	glUniform1i(volume_loc, 3);
-	*/
-	GLint screen_size_loc = ray_marching_sh.get_uniform_location("screen_size");
-	cgm::vec2 screen_size(voxel_grid_width, voxel_grid_height);
-
-	GLint voxel_grid_loc = ray_marching_sh.get_uniform_location("voxel_grid_width");
-
-
-	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model.value_ptr());
-	glUniformMatrix4fv(view_loc, 1, GL_FALSE, (cgm::invert_orthogonal(camera.get_transform().object_to_world())).value_ptr());
-	glUniformMatrix4fv(proj_loc, 1, GL_FALSE, camera.get_projection().value_ptr());
-
-	glUniform2fv(screen_size_loc, 1, screen_size.value_ptr());
-	glUniform1i(voxel_grid_loc, voxel_grid_width);
-	
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
-	
-	
-	glBindTexture(GL_TEXTURE_3D, tex_3d);
-	glBindImageTexture(0, tex_3d, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA8);
-	glCheckError();
-	
-	while (!glfwWindowShouldClose(window)) {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//glActiveTexture(GL_TEXTURE1);
-		ray_marching_sh.use();
-		near_clipping_plane.render(ray_marching_sh);
-		//glCheckError();
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	}
-	glCheckError();
-	//---------------------------- END 03 ------------------------------------------------- ///
+	//delete textures
+	glDeleteTextures(1, &bf_texture);
+	glDeleteTextures(1, &ff_texture);
 }
+
+
+
+
 
 void voxels_slice_visualization(const GLuint & tex_3d, GLFWwindow * window)
 {
@@ -972,103 +678,7 @@ void voxels_slice_visualization(const GLuint & tex_3d, GLFWwindow * window)
 	} 
 }
 
-void voxelize_scene(const gls::Model & m, const gls::Shader & vs, const GLuint & tex_id , GLFWwindow *window)
-{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glViewport(0, 0, voxel_grid_width, voxel_grid_height);
-	
-	//Disable some fixed-function opeartions
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-	cgm::mat4 ortho = cgm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 2.0f - 1.0f, 3.0f);
-	
-	cgs::Transform obj_transf;
-	obj_transf.set_object_to_upright(cgm::concat_mat4(cgm::scale(0.12f, 0.12f, 0.12f), cgm::rotate(cgm::vec3(1.0f, 0.0f, 0.0f),0.0f )) );
-	obj_transf.set_position(cgm::vec3(0.0f, 0.0f, 0.0f));
-	
-
-	cgs::Camera camera;
-	camera.set_mode(cgs::Camera::ORTHOGRAPHIC);
-	camera.scale_film_gate(voxel_grid_width, voxel_grid_height);
-	
-	
-	/// ORTHOGONAL PROJECTION ALONG THE X AXIS ///////////////////
-	camera.get_transform().set_object_to_upright(cgm::rotate(cgm::vec3(0.0f, 1.0f, 0.0f), 90.0f));
-	camera.get_transform().set_position(cgm::vec3(2.0f, 0.0f, 0.0f));
-	
-	cgm::mat4 mvp_x = cgm::concat_mat4(obj_transf.object_to_world(), cgm::invert_orthogonal(camera.get_transform().object_to_world()));
-	mvp_x.concat_assign(ortho);
-	GLint mvp_x_loc =  vs.get_uniform_location("u_mvp_x");
-	glUniformMatrix4fv(mvp_x_loc, 1, GL_FALSE, mvp_x.value_ptr());
-
-	/// -------------------------------------/////////////////////
-	
-	/// ORTHOGONAL PROJECTION ALONG THE Y AXIS //////
-	camera.get_transform().set_object_to_upright(cgm::rotate(cgm::vec3(1.0f, 0.0f, 0.0f), -90.0f));
-	camera.get_transform().set_position(cgm::vec3(0.0f, 2.0f, 0.0f));
-
-	cgm::mat4 mvp_y = cgm::concat_mat4(obj_transf.object_to_world(), cgm::invert_orthogonal(camera.get_transform().object_to_world()));
-	mvp_y.concat_assign(ortho);
-	GLint mvp_y_loc = vs.get_uniform_location("u_mvp_y");
-	glUniformMatrix4fv(mvp_y_loc, 1, GL_FALSE, mvp_y.value_ptr());
-	//-----------------------------------------/////
-	
-	// ORTHOGONAL PROJECTION ALONG THE Z AXIS //
-
-	camera.get_transform().set_object_to_upright(cgm::mat4());
-	camera.get_transform().set_position(cgm::vec3(0.0f, 0.0f, 2.0f));
-
-	cgm::mat4 mvp_z = cgm::concat_mat4(obj_transf.object_to_world(), cgm::invert_orthogonal(camera.get_transform().object_to_world()));
-	mvp_z.concat_assign(ortho);
-	GLint mvp_z_loc = vs.get_uniform_location("u_mvp_z");
-	glUniformMatrix4fv(mvp_z_loc, 1, GL_FALSE, mvp_z.value_ptr());
-	// --------------------------------------//
-	
-	glUniform1i(vs.get_uniform_location("u_voxel_grid_width"), voxel_grid_width);
-	glUniform1i(vs.get_uniform_location("u_voxel_grid_height"), voxel_grid_height);
-
-	
-	glBindTexture(GL_TEXTURE_3D, tex_id);
-	glBindImageTexture(0, tex_id, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA8);
-	//while (!glfwWindowShouldClose(window)) {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		vs.use();
-		m.render(vs);
-
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	//}
-
-	/*glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-	static  float data[4 * 128 * 128 * 128] = { 0.0f };
-	glGetTexImage(GL_TEXTURE_3D, 0, GL_RGBA, GL_FLOAT, data);
-	int r, c, s;
-	r = c = s = 0;
-	int count = 0;
-	for (auto & i : data) {
-		++count;
-		if (i != 0) {
-			std::cout << i << " ";
-			std::cout << "count= " << count << " ";
-		}
-		
-	}
-	std::cout << std::endl;*/
-
-	glBindTexture(GL_TEXTURE_3D, 0);
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-
-	//gls::Shader volume_shader("../../Applications-source/model_loader/shaders/ray_marching.vert", "../../Applications-source/model_loader/shaders/ray_marching.frag");
-	glDeleteProgram(vs.get_program());
-	glCheckError();
-	render_voxels_test( tex_id, window);
-	//voxels_slice_visualization(tex_id, window);
-}
 
 void build_svo() 
 {
@@ -1288,7 +898,7 @@ void render_svo(GLFWwindow *window)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void voxelizeScene(int bStore, GLFWwindow *window, gls::Model & model, gls::Shader & voxelize_shader, const std::string & mode, const GLuint & tex_id)
+void voxelize_scene(int bStore, GLFWwindow *window, gls::Model & model, gls::Shader & voxelize_shader, const std::string & mode, const GLuint & tex_id)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glViewport(0, 0, voxel_grid_width, voxel_grid_height);
@@ -1437,7 +1047,7 @@ void build_voxel_fragment_list(GLFWwindow *window, gls::Model & model, gls::Shad
 
 	//Create atomic counter buffer
 	atomic_counter = gen_atomic_buff();
-	voxelizeScene(0, window, model, shader, "svo", 0);
+	voxelize_scene(0, window, model, shader, "svo", 0);
 	glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
 
 	err = glGetError();
@@ -1460,55 +1070,14 @@ void build_voxel_fragment_list(GLFWwindow *window, gls::Model & model, gls::Shad
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
 
 	//Voxelize the scene again, this time store the data in the voxel fragment list
-	voxelizeScene(1, window, model, shader, "svo", 0);
+	voxelize_scene(1, window, model, shader, "svo", 0);
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
 }
 
 int main(int argc, char *argv[]) 
 {
-	glfwSetErrorCallback(error_callback);
-
-	if (!glfwInit()) {
-		exit(-1);
-	}
-
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
-	std::string title;
-	if (voxel_grid_width == 128) {
-		title = "voxelization 128x128x128";
-	}
-	else if (voxel_grid_width == 256) {
-		title = "voxelization 256x256x256";
-	}
-	else if (voxel_grid_width == 512) {
-		title = "voxelization 512x512x512";
-	}
-
-	GLFWwindow *window = glfwCreateWindow(voxel_grid_width, voxel_grid_height, title.c_str(), NULL, NULL);
-
-	if (!window) {
-		glfwTerminate();
-		exit(-1);
-	}
-
-	glfwMakeContextCurrent(window);
-	glfwSwapInterval(1);
-	
-	glfwSetKeyCallback(window, key_callback);
-
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwSetCursorPosCallback(window, mouse_callback);
-
-	//Initialize GLEW 
-	glewExperimental = GL_TRUE;
-	glewInit();
-
-	std::string path = "../../Resources/Cow/cow.obj";
+	std::string path = "../../Resources/Bunny/bunny.obj";
 	std::string mode = "svo";
 	if (argc > 1) {
 	    path = argv[1];
@@ -1520,23 +1089,63 @@ int main(int argc, char *argv[])
 			mode = argv[2];
 		}
 	}
-	
-	//gls::Mesh mesh = setup_box();
-	
 
-	//gls::Shader shader("../../Applications-source/model_loader/shaders/vertex.vert", "../../Applications-source/model_loader/shaders/fragment2.frag");
+	std::string title = mode;
+	if (voxel_grid_width == 128) {
+		title += " 128x128x128";
+	}
+	else if (voxel_grid_width == 256) {
+		title += " 256x256x256";
+	}
+	else if (voxel_grid_width == 512) {
+		title += " 512x512x512";
+	}
+
+	
+	glfwSetErrorCallback(error_callback);
+
+	if (!glfwInit()) {
+		exit(-1);
+	}
+
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+	
+	GLFWwindow *window = glfwCreateWindow(voxel_grid_width, voxel_grid_height, title.c_str(), NULL, NULL);
+
+	if (!window) {
+		glfwTerminate();
+		exit(-1);
+	}
+
+	glfwMakeContextCurrent(window);
+	glfwSwapInterval(1);
+
+	glfwSetKeyCallback(window, key_callback);
+
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouse_callback);
+
+	//Initialize GLEW 
+	glewExperimental = GL_TRUE;
+	glewInit();
+
+	std::cout << "GL_R32UI have " << sizeof(GL_R32UI) << " bytes" << std::endl;
+
+	
 	gls::Shader shader("C:/Users/mateu/Documents/Projects/Applications/model_loader/source/shaders/vertex2.vert", "C:/Users/mateu/Documents/Projects/Applications/model_loader/source/shaders/fragment2.frag");
 	
-	//gls::Shader voxelize_shader("../../Applications-source/model_loader/shaders/voxelization.vert", "../../Applications-source/model_loader/shaders/voxelization.frag", "../../Applications-source/model_loader/shaders/voxelization.geom");
 	gls::Shader voxelize_shader("../../Applications-source/model_loader/shaders/voxelize.vert", "../../Applications-source/model_loader/shaders/voxelize.frag", "../../Applications-source/model_loader/shaders/voxelize.geom");
 	voxelize_shader.use();
 	gls::Model model(path);
 
 	if (mode == "texture") {
 		GLuint tex_3d_id = gen_3d_texture(voxel_grid_width);
-		voxelizeScene(0, window, model, voxelize_shader, "texture", tex_3d_id);
-		//voxelize_scene_test(model, voxelize_shader, tex_3d_id, 1, 0, window);
-		render_voxels_test(tex_3d_id, window);
+		voxelize_scene(0, window, model, voxelize_shader, "texture", tex_3d_id);
+		render_tex3d_voxels(tex_3d_id, window);
 	}
 	else if (mode == "svo") {
 		
@@ -1548,43 +1157,17 @@ int main(int argc, char *argv[])
 		glDeleteBuffers(1, &voxel_pos_tex_buff);
 		voxel_pos_tex_buff = 0;
 		
-		render_svo(window);
-		return 0;
+		//check if this creates a problem!!!
+		glDeleteTextures(1, &voxel_col_tex);
+		voxel_col_tex = 0;
+		glDeleteBuffers(1, &voxel_col_tex_buff);
+		voxel_col_tex_buff = 0;
 
-		//generate the voxel fragment list
-		atomic_counter = gen_atomic_buff();
-		voxelize_scene_test(model, voxelize_shader, 0, 2, 1, window);
-		glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
-		glCheckError();
-
-		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter);
-		GLuint* count = (GLuint*)glMapBufferRange(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
-		glCheckError();
-
-		num_voxel_fragments = count[0];
-		std::cout << "Number of Entries in Voxel Fragment List: " << num_voxel_fragments << std::endl;
-
-		//create the arrays/buffers for the voxel fragment list
-		gen_linear_buff(sizeof(GLuint) * num_voxel_fragments, GL_R32UI, &voxel_pos_tex, &voxel_pos_tex_buff);
-		gen_linear_buff(sizeof(GLuint) * num_voxel_fragments, GL_RGBA8, &voxel_col_tex, &voxel_col_tex_buff);
-
-		//reset atomic counter
-		memset(count, 0, sizeof(GLuint));
-
-		glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
-		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
-
-		voxelize_scene_test(model, voxelize_shader, 0, 2, 2, window);
-		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
-		 //octree subdivision
-		build_svo();
 		render_svo(window);
 	}
 
-	//shader.use();
 
-	//render_voxels(g_volTexObj, window);
+
 	return 0;
 
 
